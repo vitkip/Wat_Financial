@@ -38,8 +38,17 @@ class UsersController extends Controller
             $this->redirect('users');
         }
 
-        $this->user->create(['name' => $name, 'email' => $email, 'password' => $password]);
-        $this->flash('success', 'ສ້າງຜູ້ໃຊ້ໃໝ່ສຳເລັດ.');
+        try {
+            $this->user->create(['name' => $name, 'email' => $email, 'password' => $password]);
+            $this->flash('success', 'ສ້າງຜູ້ໃຊ້ໃໝ່ສຳເລັດ.');
+        } catch (PDOException $e) {
+            // MySQL error 1062 = Duplicate entry (UNIQUE constraint on email)
+            if (str_contains($e->getMessage(), '1062') || str_contains($e->getMessage(), 'Duplicate')) {
+                $this->flash('error', 'Email ນີ້ຖືກໃຊ້ງານແລ້ວ. ກະລຸນາໃຊ້ email ອື່ນ.');
+            } else {
+                $this->flash('error', 'ເກີດຂໍ້ຜິດພາດ. ກະລຸນາລອງໃໝ່.');
+            }
+        }
         $this->redirect('users');
     }
 

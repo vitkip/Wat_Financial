@@ -1,4 +1,38 @@
 <?php
+// ── Security Headers ──────────────────────────────────────────
+// ສົ່ງ headers ກ່ອນ output ໃດໆ
+header('X-Frame-Options: SAMEORIGIN');
+header('X-Content-Type-Options: nosniff');
+header('X-XSS-Protection: 1; mode=block');
+header('Referrer-Policy: strict-origin-when-cross-origin');
+header('Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()');
+header(
+    "Content-Security-Policy: " .
+    "default-src 'self'; " .
+    "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; " .
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; " .
+    "font-src 'self' https://fonts.gstatic.com; " .
+    "img-src 'self' data:; " .
+    "connect-src 'self'; " .
+    "frame-ancestors 'self'; " .
+    "base-uri 'self'; " .
+    "form-action 'self';"
+);
+
+// ── Hardened Session Cookie ───────────────────────────────────
+// ຕ້ອງ set ກ່ອນ session_start()
+$isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || (int)($_SERVER['SERVER_PORT'] ?? 80) === 443;
+
+session_set_cookie_params([
+    'lifetime' => 0,               // ຫຼົ່ນຕອນປິດ browser
+    'path'     => '/',
+    'domain'   => '',
+    'secure'   => $isHttps,        // HTTPS ເທົ່ານັ້ນ (ຖ້າມີ)
+    'httponly' => true,            // JavaScript ບໍ່ສາມາດ access cookie ໄດ້
+    'samesite' => 'Strict',        // ກັນ CSRF ຜ່ານ cookie
+]);
+
 // ── Front Controller ─────────────────────────────────────────
 session_start();
 define('BASE_PATH', __DIR__);

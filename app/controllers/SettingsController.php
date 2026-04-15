@@ -111,6 +111,11 @@ class SettingsController extends Controller
         }
 
         $this->user->updatePassword($id, $newPass);
+
+        // ── Regenerate session ID ຫຼັງປ່ຽນ password ─────────────
+        // ກັນ session fixation: session ID ເກົ່າຈະໃຊ້ບໍ່ໄດ້ອີກ
+        session_regenerate_id(true);
+
         $this->flash('success', 'ປ່ຽນລະຫັດຜ່ານສຳເລັດ. ກະລຸນາ login ໃໝ່ເພື່ອຄວາມປອດໄພ.');
         $this->redirect('settings');
     }

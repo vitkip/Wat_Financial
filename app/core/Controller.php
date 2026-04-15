@@ -59,6 +59,22 @@ class Controller
         if (!isset($_SESSION['user_id'])) {
             $this->redirect('auth');
         }
+
+        // ── Session Timeout (idle) ────────────────────────────
+        // ຖ້າ idle ເກີນ SESSION_TIMEOUT_SECS → force logout
+        $timeout = defined('SESSION_TIMEOUT_SECS') ? SESSION_TIMEOUT_SECS : 7200;
+        $now     = time();
+
+        if (!empty($_SESSION['_last_activity']) && ($now - $_SESSION['_last_activity']) > $timeout) {
+            session_unset();
+            session_destroy();
+            // ສ້າງ session ໃໝ່ ແລ້ວ flash ກ່ອນ redirect
+            session_start();
+            $_SESSION['_flash'] = ['type' => 'warning', 'msg' => 'Session ໝົດອາຍຸ. ກະລຸນາ login ໃໝ່.'];
+            $this->redirect('auth');
+        }
+
+        $_SESSION['_last_activity'] = $now;
     }
 
     protected function isLoggedIn(): bool

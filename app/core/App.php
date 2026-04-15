@@ -29,10 +29,24 @@ class App
 
         $controller = new $this->controller();
 
-        // Method
+        // Method — ອະນຸຍາດສະເພາະ methods ທີ່ declared ໃນ controller class ນັ້ນເທົ່ານັ້ນ
+        // (ບໍ່ include inherited methods ຈາກ base Controller ທີ່ອາດຖືກ exploit ຜ່ານ URL)
         if (!empty($url[1])) {
-            if (method_exists($controller, $url[1])) {
-                $this->method = $url[1];
+            $methodName = $url[1];
+            if (method_exists($controller, $methodName)) {
+                try {
+                    $ref = new ReflectionMethod($controller, $methodName);
+                    $declaredIn = $ref->getDeclaringClass()->getName();
+                    if ($declaredIn === get_class($controller) && $ref->isPublic()) {
+                        $this->method = $methodName;
+                    } else {
+                        $this->notFound();
+                        return;
+                    }
+                } catch (ReflectionException $e) {
+                    $this->notFound();
+                    return;
+                }
             } else {
                 $this->notFound();
                 return;

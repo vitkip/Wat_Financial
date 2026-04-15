@@ -9,7 +9,10 @@ define('DB_PASS', '');
 define('DB_CHARSET', 'utf8mb4');
 
 // App
-define('APP_ENV', 'development'); // 'production'
+define('APP_ENV', 'development'); // ປ່ຽນເປັນ 'production' ຕອນ deploy
+
+// Session timeout: 2 ຊົ່ວໂມງ (7200 ວິນາທີ) — idle session ຈະຖືກ force logout
+define('SESSION_TIMEOUT_SECS', 7200);
 
 // Default fallbacks — overridden at bootstrap from the settings table
 define('APP_NAME_DEFAULT',      'Wat Financial Dashboard');
