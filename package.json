@@ -1,0 +1,14 @@
+{
+  "name": "wat-financial-dashboard",
+  "version": "1.0.0",
+  "description": "Wat Financial Dashboard - PHP MVC + TailwindCSS",
+  "scripts": {
+    "build": "npx tailwindcss -i ./input.css -o ./public/css/app.css --minify",
+    "dev": "npx tailwindcss -i ./input.css -o ./public/css/app.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.0",
+    "postcss": "^8.4.0",
+    "autoprefixer": "^10.4.0"
+  }
+}

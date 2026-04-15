@@ -1,0 +1,138 @@
+@import url('https://fonts.googleapis.com/css2?family=Phetsarath:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-on-surface font-body;
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-headline;
+  }
+}
+
+@layer components {
+  /* ── Glass Nav Rail ─────────────────────────────────────── */
+  .nav-rail {
+    background: rgba(247, 249, 251, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    @apply shadow-glass border-r border-outline-variant/10;
+  }
+
+  /* ── Hero Gradient ───────────────────────────────────────── */
+  .hero-gradient {
+    background: linear-gradient(135deg, #091426 0%, #1E293B 100%);
+  }
+
+  /* ── Ambient Card ────────────────────────────────────────── */
+  .card {
+    @apply bg-surface-container-lowest rounded-lg p-6 shadow-ambient;
+  }
+
+  .card-elevated {
+    @apply bg-surface-container-lowest rounded-lg p-6 shadow-ambient-md
+           hover:shadow-glass transition-shadow duration-300;
+  }
+
+  /* ── Primary Button ─────────────────────────────────────── */
+  .btn-primary {
+    @apply bg-primary text-on-primary px-6 py-2.5 rounded font-label
+           text-label-md font-semibold tracking-wide
+           hover:bg-primary-container active:scale-95
+           transition-all duration-200 inline-flex items-center gap-2;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+
+  /* ── Ghost Button ───────────────────────────────────────── */
+  .btn-ghost {
+    @apply text-secondary font-body text-title-sm font-semibold
+           px-4 py-2 rounded hover:bg-secondary/5
+           transition-colors duration-200 inline-flex items-center gap-1;
+  }
+
+  /* ── Income / Positive Chip ─────────────────────────────── */
+  .chip-income {
+    @apply text-on-secondary-fixed-variant bg-secondary-fixed
+           text-label-md font-label px-2.5 py-0.5 rounded-full
+           inline-flex items-center gap-1;
+  }
+
+  /* ── Expense / Negative Chip ────────────────────────────── */
+  .chip-expense {
+    @apply text-on-tertiary-fixed-variant bg-tertiary-fixed
+           text-label-md font-label px-2.5 py-0.5 rounded-full
+           inline-flex items-center gap-1;
+  }
+
+  /* ── Stat KPI Number ────────────────────────────────────── */
+  .kpi-number {
+    @apply font-headline text-display-lg text-on-surface;
+  }
+
+  /* ── Section Label ──────────────────────────────────────── */
+  .section-label {
+    @apply font-label text-label-md uppercase tracking-widest
+           text-on-surface-variant;
+  }
+
+  /* ── Nav Active State ───────────────────────────────────── */
+  .nav-item-active {
+    @apply text-primary relative;
+  }
+
+  .nav-item-active::before {
+    content: '';
+    @apply absolute left-0 top-1/2 -translate-y-1/2
+           w-1 h-8 bg-primary rounded-r-full;
+  }
+
+  /* ── Progress Bar ───────────────────────────────────────── */
+  .progress-bar {
+    @apply h-2 rounded-full bg-surface-container overflow-hidden;
+  }
+
+  .progress-fill {
+    @apply h-full rounded-full transition-all duration-700 ease-out;
+  }
+
+  /* ── Mobile Menu Overlay ────────────────────────────────── */
+  .mobile-overlay {
+    @apply fixed inset-0 bg-on-surface/30 backdrop-blur-sm z-30
+           lg:hidden;
+  }
+}
+
+@layer utilities {
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fadeIn {
+    animation: fadeIn 0.35s ease-out both;
+  }
+
+  .ghost-border {
+    border: 1px solid rgba(197, 198, 205, 0.15);
+  }
+  .text-balance {
+    text-wrap: balance;
+  }
+  .lao-safe {
+    line-height: 1.75;
+  }
+}
