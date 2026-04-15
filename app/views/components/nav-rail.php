@@ -110,6 +110,26 @@ function navIcon(string $icon): string
         <?php endforeach; ?>
     </nav>
 
+    <!-- User Guide link -->
+    <div class="px-3 pb-1">
+        <a href="<?= BASE_URL ?>/public/user-guide.html" target="_blank"
+           class="flex items-center gap-3 px-3 py-2.5 rounded-md
+                  transition-colors duration-150 group
+                  text-on-surface-variant hover:bg-surface-container hover:text-on-surface">
+            <svg class="w-5 h-5 flex-shrink-0 text-on-surface-variant group-hover:text-on-surface"
+                 fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+            </svg>
+            <span class="font-label text-sm">ຄູ່ມືການໃຊ້ງານ</span>
+            <svg class="w-3 h-3 ml-auto opacity-40 group-hover:opacity-70 flex-shrink-0"
+                 fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+            </svg>
+        </a>
+    </div>
+
     <!-- Settings link -->
     <div class="px-3 pb-2">
         <a href="<?= BASE_URL ?>/settings" class="flex items-center gap-3 px-3 py-2.5 rounded-md

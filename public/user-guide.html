@@ -1,0 +1,1729 @@
+<!DOCTYPE html>
+<html lang="lo">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ຄູ່ມືການໃຊ້ງານ — Wat Financial Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Noto+Serif:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ═══════════════════════════════════════════════════
+       Design Tokens — Wat Financial "Sacred Ledger"
+    ═══════════════════════════════════════════════════ */
+    :root {
+      --primary:            #091426;
+      --primary-container:  #1E293B;
+      --secondary:          #006C49;
+      --secondary-container:#6CF8BB;
+      --secondary-fixed:    #6FFBBE;
+      --tertiary-fixed:     #FFDAD7;
+      --on-tertiary-variant:#930013;
+      --background:         #F7F9FB;
+      --surface:            #F7F9FB;
+      --surface-low:        #F2F4F6;
+      --surface-lowest:     #FFFFFF;
+      --surface-container:  #ECEEF0;
+      --surface-high:       #E6E8EA;
+      --on-background:      #191C1E;
+      --on-surface:         #191C1E;
+      --on-surface-variant: #45474C;
+      --outline-variant:    #C5C6CD;
+      --error:              #BA1A1A;
+      --error-container:    #FFDAD6;
+
+      --font-headline: 'Manrope', sans-serif;
+      --font-body:     'Noto Serif', serif;
+      --font-ui:       'Inter', sans-serif;
+
+      --radius: 4px;
+      --shadow: 0 0 32px 0 rgba(9,20,38,0.04);
+    }
+
+    /* ═══════════════════════════════════════════════════
+       Reset & Base
+    ═══════════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-body);
+      font-size: 1rem;
+      line-height: 1.7;
+      color: var(--on-surface);
+      background: var(--background);
+    }
+
+    /* ═══════════════════════════════════════════════════
+       Sidebar Navigation
+    ═══════════════════════════════════════════════════ */
+    .layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 280px;
+      flex-shrink: 0;
+      position: fixed;
+      top: 0; left: 0;
+      height: 100vh;
+      overflow-y: auto;
+      background: rgba(247,249,251,0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-right: 1px solid rgba(197,198,205,0.20);
+      padding: 2rem 1.5rem;
+      z-index: 100;
+    }
+
+    .sidebar-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 2.5rem;
+      text-decoration: none;
+    }
+
+    .brand-icon {
+      width: 40px; height: 40px;
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, #091426 0%, #1E293B 100%);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .brand-icon svg { width: 20px; height: 20px; fill: none; stroke: #fff; stroke-width: 2; }
+
+    .brand-text h1 {
+      font-family: var(--font-headline);
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--primary);
+      line-height: 1.2;
+    }
+    .brand-text p {
+      font-family: var(--font-ui);
+      font-size: 0.7rem;
+      color: var(--on-surface-variant);
+      line-height: 1;
+    }
+
+    .nav-section-label {
+      font-family: var(--font-ui);
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--on-surface-variant);
+      padding: 0 0.5rem;
+      margin: 1.5rem 0 0.5rem;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      padding: 0.55rem 0.75rem;
+      border-radius: var(--radius);
+      text-decoration: none;
+      font-family: var(--font-ui);
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--on-surface-variant);
+      transition: background 0.15s, color 0.15s;
+      margin-bottom: 2px;
+    }
+    .nav-item:hover,
+    .nav-item.active {
+      background: var(--surface-container);
+      color: var(--primary);
+    }
+    .nav-item svg {
+      width: 15px; height: 15px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      flex-shrink: 0;
+    }
+    .nav-badge {
+      margin-left: auto;
+      font-size: 0.6rem;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 20px;
+      background: var(--secondary-fixed);
+      color: var(--secondary);
+    }
+
+    /* ═══════════════════════════════════════════════════
+       Main Content
+    ═══════════════════════════════════════════════════ */
+    .main {
+      margin-left: 280px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* ── Cover ── */
+    .cover {
+      background: linear-gradient(135deg, #091426 0%, #1E293B 60%, #253448 100%);
+      padding: 5rem 4rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .cover::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 320px; height: 320px;
+      border-radius: 50%;
+      background: rgba(111,251,190,0.05);
+    }
+    .cover::after {
+      content: '';
+      position: absolute;
+      bottom: -40px; left: 40%;
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      background: rgba(111,251,190,0.04);
+    }
+    .cover-eyebrow {
+      font-family: var(--font-ui);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #6FFBBE;
+      margin-bottom: 1rem;
+    }
+    .cover h1 {
+      font-family: var(--font-headline);
+      font-size: 3rem;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.1;
+      margin-bottom: 1rem;
+    }
+    .cover p {
+      font-family: var(--font-body);
+      font-size: 1.0625rem;
+      color: rgba(255,255,255,0.65);
+      max-width: 560px;
+      line-height: 1.7;
+      margin-bottom: 2rem;
+    }
+    .cover-meta {
+      display: flex;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+    .cover-meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .cover-meta-item span:first-child {
+      font-family: var(--font-ui);
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.4);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .cover-meta-item span:last-child {
+      font-family: var(--font-ui);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.8);
+    }
+
+    /* ── TOC ── */
+    .toc-section {
+      background: var(--surface-lowest);
+      padding: 3rem 4rem;
+      border-bottom: 1px solid rgba(197,198,205,0.20);
+    }
+    .toc-section h2 {
+      font-family: var(--font-headline);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 1.5rem;
+      letter-spacing: 0.04em;
+    }
+    .toc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 0.5rem;
+    }
+    .toc-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.625rem 0.875rem;
+      border-radius: var(--radius);
+      text-decoration: none;
+      background: var(--surface-low);
+      transition: background 0.15s, transform 0.15s;
+    }
+    .toc-item:hover {
+      background: var(--surface-container);
+      transform: translateX(3px);
+    }
+    .toc-num {
+      font-family: var(--font-ui);
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--secondary);
+      width: 20px;
+      flex-shrink: 0;
+    }
+    .toc-label {
+      font-family: var(--font-ui);
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--on-surface);
+    }
+
+    /* ── Page Sections ── */
+    .content {
+      padding: 0;
+    }
+
+    .section {
+      padding: 4rem 4rem 3rem;
+      border-bottom: 1px solid rgba(197,198,205,0.15);
+    }
+    .section:last-child { border-bottom: none; }
+
+    .section-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 1.25rem;
+      margin-bottom: 2.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(197,198,205,0.20);
+    }
+    .section-icon {
+      width: 48px; height: 48px;
+      border-radius: var(--radius);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .section-icon svg {
+      width: 22px; height: 22px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+    }
+    .icon-bg-primary   { background: var(--primary); color: #fff; }
+    .icon-bg-secondary { background: var(--secondary-fixed); color: var(--secondary); }
+    .icon-bg-blue      { background: #EFF6FF; color: #2563EB; }
+    .icon-bg-purple    { background: #F5F3FF; color: #7C3AED; }
+    .icon-bg-amber     { background: #FFFBEB; color: #D97706; }
+    .icon-bg-teal      { background: #F0FDFA; color: #0D9488; }
+    .icon-bg-pink      { background: #FFF0F3; color: #E11D48; }
+    .icon-bg-slate     { background: var(--surface-container); color: var(--on-surface-variant); }
+
+    .section-title-group { flex: 1; }
+    .section-eyebrow {
+      font-family: var(--font-ui);
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--secondary);
+      margin-bottom: 0.25rem;
+    }
+    .section-title {
+      font-family: var(--font-headline);
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--primary);
+      line-height: 1.2;
+    }
+    .section-url {
+      margin-top: 0.375rem;
+      font-family: var(--font-ui);
+      font-size: 0.75rem;
+      color: var(--on-surface-variant);
+    }
+    .section-url code {
+      background: var(--surface-container);
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.7rem;
+    }
+
+    /* ── Feature Cards ── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.25rem;
+      margin: 2rem 0;
+    }
+
+    .feature-card {
+      background: var(--surface-lowest);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+    }
+
+    .feature-card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    .feature-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .feature-card h3 {
+      font-family: var(--font-body);
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--on-surface);
+    }
+    .feature-card p {
+      font-family: var(--font-body);
+      font-size: 0.875rem;
+      color: var(--on-surface-variant);
+      line-height: 1.65;
+    }
+
+    /* ── Step List ── */
+    .steps {
+      list-style: none;
+      margin: 1.5rem 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .step {
+      display: flex;
+      gap: 1rem;
+      position: relative;
+    }
+    .step:not(:last-child)::before {
+      content: '';
+      position: absolute;
+      left: 15px;
+      top: 32px;
+      bottom: 0;
+      width: 2px;
+      background: var(--outline-variant);
+    }
+    .step-num {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      font-family: var(--font-ui);
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+    }
+    .step-body {
+      padding-bottom: 1.75rem;
+      flex: 1;
+    }
+    .step-body h4 {
+      font-family: var(--font-body);
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--on-surface);
+      margin-top: 4px;
+      margin-bottom: 0.25rem;
+    }
+    .step-body p {
+      font-family: var(--font-body);
+      font-size: 0.875rem;
+      color: var(--on-surface-variant);
+      line-height: 1.65;
+    }
+
+    /* ── Info / Warning boxes ── */
+    .callout {
+      display: flex;
+      gap: 0.875rem;
+      padding: 1rem 1.25rem;
+      border-radius: var(--radius);
+      margin: 1.5rem 0;
+      font-size: 0.875rem;
+      line-height: 1.65;
+    }
+    .callout svg {
+      width: 18px; height: 18px;
+      fill: none; stroke: currentColor; stroke-width: 2;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .callout-info {
+      background: #EFF6FF;
+      color: #1D4ED8;
+    }
+    .callout-warn {
+      background: #FFFBEB;
+      color: #92400E;
+    }
+    .callout-success {
+      background: #F0FDF4;
+      color: #166534;
+    }
+    .callout-danger {
+      background: var(--error-container);
+      color: #7F1D1D;
+    }
+    .callout p { font-family: var(--font-body); }
+    .callout strong { font-weight: 600; }
+
+    /* ── Table ── */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      font-size: 0.875rem;
+    }
+    .data-table th {
+      font-family: var(--font-ui);
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--on-surface-variant);
+      padding: 0.625rem 1rem;
+      background: var(--surface-low);
+      text-align: left;
+    }
+    .data-table td {
+      font-family: var(--font-body);
+      padding: 0.75rem 1rem;
+      color: var(--on-surface);
+      vertical-align: top;
+    }
+    .data-table tr:not(:last-child) td {
+      border-bottom: 1px solid rgba(197,198,205,0.20);
+    }
+    .data-table tr:hover td {
+      background: var(--surface-low);
+    }
+
+    /* ── Badge / Chip ── */
+    .badge {
+      display: inline-block;
+      font-family: var(--font-ui);
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
+    .badge-income  { background: var(--secondary-fixed); color: var(--secondary); }
+    .badge-expense { background: var(--tertiary-fixed);  color: var(--on-tertiary-variant); }
+    .badge-blue    { background: #EFF6FF; color: #2563EB; }
+    .badge-purple  { background: #F5F3FF; color: #7C3AED; }
+    .badge-amber   { background: #FFFBEB; color: #D97706; }
+    .badge-slate   { background: var(--surface-container); color: var(--on-surface-variant); }
+
+    /* ── Screenshot Mockup ── */
+    .mockup {
+      background: var(--surface-lowest);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow), 0 0 0 1px rgba(197,198,205,0.25);
+      overflow: hidden;
+      margin: 1.75rem 0;
+    }
+    .mockup-bar {
+      background: var(--primary-container);
+      padding: 0.625rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .mockup-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+    }
+    .mockup-url {
+      margin-left: 0.5rem;
+      font-family: var(--font-ui);
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.5);
+      flex: 1;
+      background: rgba(255,255,255,0.08);
+      padding: 3px 10px;
+      border-radius: 3px;
+    }
+    .mockup-body {
+      padding: 1.5rem;
+    }
+
+    /* ── KPI Row ── */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: rgba(197,198,205,0.20);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin: 1rem 0;
+    }
+    .kpi-cell {
+      background: var(--surface-low);
+      padding: 1.25rem;
+    }
+    .kpi-cell .label {
+      font-family: var(--font-ui);
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: var(--on-surface-variant);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 4px;
+    }
+    .kpi-cell .value {
+      font-family: var(--font-headline);
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+    .val-income  { color: var(--secondary); }
+    .val-expense { color: var(--on-tertiary-variant); }
+    .val-balance { color: var(--primary); }
+    .val-rate    { color: #2563EB; }
+
+    /* ── Form Preview ── */
+    .form-preview {
+      background: var(--surface-low);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin: 1rem 0;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .form-row.full { grid-template-columns: 1fr; }
+    .form-group {}
+    .form-label {
+      display: block;
+      font-family: var(--font-ui);
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--on-surface-variant);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.375rem;
+    }
+    .form-input {
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      border-radius: var(--radius);
+      background: var(--surface-lowest);
+      border: 1px solid rgba(197,198,205,0.40);
+      font-family: var(--font-body);
+      font-size: 0.875rem;
+      color: var(--on-surface);
+    }
+    .form-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.625rem 1.25rem;
+      border-radius: var(--radius);
+      font-family: var(--font-ui);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-danger  { background: var(--error); color: #fff; }
+    .btn-ghost   { background: transparent; color: var(--secondary); font-family: var(--font-body); font-size: 0.875rem; }
+
+    /* ── Progress Bar ── */
+    .progress-wrap { margin: 0.75rem 0; }
+    .progress-meta {
+      display: flex; justify-content: space-between;
+      font-family: var(--font-ui); font-size: 0.75rem;
+      color: var(--on-surface-variant);
+      margin-bottom: 0.375rem;
+    }
+    .progress-bar {
+      height: 6px;
+      border-radius: 3px;
+      background: var(--surface-container);
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: var(--secondary);
+      transition: width 0.3s;
+    }
+    .progress-fill.over { background: var(--on-tertiary-variant); }
+
+    /* ── Divider ── */
+    .divider {
+      border: none;
+      border-top: 1px solid rgba(197,198,205,0.20);
+      margin: 2rem 0;
+    }
+
+    /* ── Keyboard shortcut ── */
+    kbd {
+      font-family: var(--font-ui);
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 3px;
+      background: var(--surface-container);
+      color: var(--on-surface);
+      border: 1px solid rgba(197,198,205,0.40);
+    }
+
+    /* ── Footer ── */
+    .guide-footer {
+      background: var(--primary);
+      padding: 3rem 4rem;
+      color: rgba(255,255,255,0.6);
+    }
+    .guide-footer h3 {
+      font-family: var(--font-headline);
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+    .guide-footer p {
+      font-size: 0.875rem;
+      line-height: 1.7;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       Responsive
+    ═══════════════════════════════════════════════════ */
+    @media (max-width: 960px) {
+      .sidebar { display: none; }
+      .main    { margin-left: 0; }
+      .cover, .toc-section, .section { padding-left: 2rem; padding-right: 2rem; }
+      .kpi-row { grid-template-columns: repeat(2,1fr); }
+      .guide-footer { padding: 2rem; }
+    }
+    @media (max-width: 600px) {
+      .cover h1 { font-size: 2rem; }
+      .cover, .toc-section, .section { padding-left: 1.25rem; padding-right: 1.25rem; }
+      .features-grid { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- ═══════════════════ SIDEBAR ═══════════════════ -->
+  <aside class="sidebar">
+    <a class="sidebar-brand" href="#top">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      </div>
+      <div class="brand-text">
+        <h1>Wat Financial</h1>
+        <p>ຄູ່ມືການໃຊ້ງານ</p>
+      </div>
+    </a>
+
+    <div class="nav-section-label">ຫຼັກ</div>
+    <a class="nav-item active" href="#dashboard">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </a>
+    <a class="nav-item" href="#transactions">
+      <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      ລາຍການທຸລະກຳ
+    </a>
+    <a class="nav-item" href="#budget">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      ງົບປະມານ
+    </a>
+    <a class="nav-item" href="#goals">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+      ເປົ້າໝາຍການເງິນ
+    </a>
+
+    <div class="nav-section-label">ວິເຄາະ</div>
+    <a class="nav-item" href="#reports">
+      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      ລາຍງານ
+    </a>
+    <a class="nav-item" href="#recurring">
+      <svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+      ລາຍການຊ້ຳ
+    </a>
+    <a class="nav-item" href="#export">
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export ຂໍ້ມູນ
+      <span class="nav-badge">CSV/PDF</span>
+    </a>
+
+    <div class="nav-section-label">ຈັດການ</div>
+    <a class="nav-item" href="#categories">
+      <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+      ໝວດໝູ່
+    </a>
+    <a class="nav-item" href="#settings">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      ການຕັ້ງຄ່າ
+    </a>
+    <a class="nav-item" href="#auth">
+      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      ການ Login / ບັນຊີ
+    </a>
+  </aside>
+
+  <!-- ═══════════════════ MAIN ═══════════════════ -->
+  <main class="main" id="top">
+
+    <!-- ── Cover ── -->
+    <section class="cover">
+      <p class="cover-eyebrow">User Manual · v1.0</p>
+      <h1>ຄູ່ມືການໃຊ້ງານ<br/>Wat Financial</h1>
+      <p>ຄູ່ມືສະບັບສົມບູນ ອະທິບາຍທຸກຟັງຊັ້ນຂອງລະບົບຈັດການການເງິນສ່ວນຕົວ ຕັ້ງແຕ່ Dashboard, ລາຍການທຸລະກຳ, ງົບປະມານ, ເປົ້າໝາຍ, ລາຍງານ, ໄປຈົນເຖິງການ Export ຂໍ້ມູນ.</p>
+      <div class="cover-meta">
+        <div class="cover-meta-item">
+          <span>ເວີຊັ່ນ</span>
+          <span>1.0.0</span>
+        </div>
+        <div class="cover-meta-item">
+          <span>ອັບເດດລ່າສຸດ</span>
+          <span>ເມສາ 2026</span>
+        </div>
+        <div class="cover-meta-item">
+          <span>ພາສາ</span>
+          <span>ລາວ / Lao</span>
+        </div>
+        <div class="cover-meta-item">
+          <span>ຈຳນວນໂໝດ</span>
+          <span>9 ໂໝດ</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Table of Contents ── -->
+    <section class="toc-section">
+      <h2>ສາລະບານ</h2>
+      <div class="toc-grid">
+        <a class="toc-item" href="#dashboard">     <span class="toc-num">01</span><span class="toc-label">Dashboard (ໜ້າຫຼັກ)</span></a>
+        <a class="toc-item" href="#transactions">  <span class="toc-num">02</span><span class="toc-label">ລາຍການທຸລະກຳ</span></a>
+        <a class="toc-item" href="#budget">        <span class="toc-num">03</span><span class="toc-label">ງົບປະມານ</span></a>
+        <a class="toc-item" href="#goals">         <span class="toc-num">04</span><span class="toc-label">ເປົ້າໝາຍການເງິນ</span></a>
+        <a class="toc-item" href="#reports">       <span class="toc-num">05</span><span class="toc-label">ລາຍງານ</span></a>
+        <a class="toc-item" href="#recurring">     <span class="toc-num">06</span><span class="toc-label">ລາຍການຊ້ຳ</span></a>
+        <a class="toc-item" href="#export">        <span class="toc-num">07</span><span class="toc-label">Export ຂໍ້ມູນ</span></a>
+        <a class="toc-item" href="#categories">    <span class="toc-num">08</span><span class="toc-label">ໝວດໝູ່</span></a>
+        <a class="toc-item" href="#settings">      <span class="toc-num">09</span><span class="toc-label">ການຕັ້ງຄ່າ</span></a>
+      </div>
+    </section>
+
+    <div class="content">
+
+      <!-- ════════════════════════════════════════════
+           01 · DASHBOARD
+      ════════════════════════════════════════════ -->
+      <section class="section" id="dashboard">
+        <div class="section-header">
+          <div class="section-icon icon-bg-primary">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          </div>
+          <div class="section-title-group">
+            <p class="section-eyebrow">ໂໝດ 01</p>
+            <h2 class="section-title">Dashboard</h2>
+            <p class="section-url">URL: <code>/Wat_Financial</code> ຫຼື <code>/Wat_Financial/dashboard</code></p>
+          </div>
+        </div>
+
+        <p style="font-size:1rem; color:var(--on-surface-variant); margin-bottom:1.5rem;">
+          Dashboard ແມ່ນໜ້າຫຼັກທີ່ສະແດງພາບລວມຂອງການເງິນເດືອນປັດຈຸບັນ ທ່ານຈະເຫັນ KPI, ກາຟ, ແລ ລາຍການຫຼ້າສຸດໄດ້ທັນທີໃນໜ້າດຽວ.
+        </p>
+
+        <!-- KPI Mockup -->
+        <div class="mockup">
+          <div class="mockup-bar">
+            <div class="mockup-dot" style="background:#FF605C"></div>
+            <div class="mockup-dot" style="background:#FFBD44"></div>
+            <div class="mockup-dot" style="background:#00CA4E"></div>
+            <div class="mockup-url">localhost/Wat_Financial/dashboard</div>
+          </div>
+          <div class="mockup-body">
+            <div style="font-family:var(--font-ui);font-size:0.7rem;color:var(--on-surface-variant);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.75rem;">ພາບລວມ · ເດືອນນີ້</div>
+            <div class="kpi-row">
+              <div class="kpi-cell">
+                <div class="label">ຍອດເງິນ</div>
+                <div class="value val-balance">₭ 16,820,000</div>
+              </div>
+              <div class="kpi-cell">
+                <div class="label">ລາຍຮັບ</div>
+                <div class="value val-income">₭ 18,500,000</div>
+              </div>
+              <div class="kpi-cell">
+                <div class="label">ລາຍຈ່າຍ</div>
+                <div class="value val-expense">₭ 1,680,000</div>
+              </div>
+              <div class="kpi-cell">
+                <div class="label">ອັດຕາປະຢັດ</div>
+                <div class="value val-rate">90.9%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-card-header">
+              <div class="feature-dot" style="background:var(--primary)"></div>
+              <h3>KPI Cards (4 ຕົວ)</h3>
+            </div>
+            <p><strong>ຍອດເງິນ</strong> — ລາຍຮັບ ລົບ ລາຍຈ່າຍ ເດືອນນີ້<br/>
+               <strong>ລາຍຮັບ</strong> — ລວມ income ທຸກລາຍການ<br/>
+               <strong>ລາຍຈ່າຍ</strong> — ລວມ expense ທຸກລາຍການ<br/>
+               <strong>ອັດຕາປະຢັດ</strong> — % (ລາຍຮັບ – ລາຍຈ່າຍ) / ລາຍຮັບ</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-header">
+              <div class="feature-dot" style="background:#2563EB"></div>
+              <h3>ກາຟລາຍຮັບ/ລາຍຈ່າຍ</h3>
+            </div>
+            <p>Bar chart ສະແດງ 6 ເດືອນຫຼ້າສຸດ ເທຍບລາຍຮັບ (ສີຂຽວ) ກັບ ລາຍຈ່າຍ (ສີແດງ) ເຫັນ trend ໄດ້ຊັດເຈນ.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-header">
+              <div class="feature-dot" style="background:#7C3AED"></div>
+              <h3>ສັດສ່ວນລາຍຈ່າຍ</h3>
+            </div>
+            <p>Donut chart ແຍກ % ລາຍຈ່າຍຕາມໝວດໝູ່ ເດືອນນີ້ ຊ່ວຍໃຫ້ຮູ້ວ່າໃຊ້ຈ່າຍໃສ່ຫຍັງຫຼາຍທີ່ສຸດ.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-header">
+              <div class="feature-dot" style="background:var(--secondary)"></div>
+              <h3>ລາຍການຫຼ້າສຸດ</h3>
+            </div>
+            <p>ສະແດງ 6 ລາຍການທຸລະກຳຫຼ້າສຸດ ພ້ອມ icon ໝວດ, ຈຳນວນ, ແລ ວັນທີ. ກົດ "ເບິ່ງທັງໝົດ" ໄປໜ້າ Transactions.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-header">
+              <div class="feature-dot" style="background:#D97706"></div>
+              <h3>ງົບປະມານ Progress</h3>
+            </div>
+            <p>ແຕ່ລະໝວດໝູ່ທີ່ຕັ້ງງົບ ຈະສະແດງ progress bar: ສີຂຽວ = ຍັງໃນງົບ, ສີແດງ = ເກີນງົບ.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════════════════
+           02 · TRANSACTIONS
+      ════════════════════════════════════════════ -->
+      <section class="section" id="transactions">
+        <div class="section-header">
+          <div class="section-icon icon-bg-secondary">
+            <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          </div>
+          <div class="section-title-group">
+            <p class="section-eyebrow">ໂໝດ 02</p>
+            <h2 class="section-title">ລາຍການທຸລະກຳ</h2>
+            <p class="section-url">URL: <code>/Wat_Financial/transactions</code></p>
+          </div>
+        </div>
+
+        <p style="font-size:1rem; color:var(--on-surface-variant); margin-bottom:2rem;">
+          ຈັດການລາຍການເງິນທຸກລາຍການ — ທັງລາຍຮັບ ແລ ລາຍຈ່າຍ. ຮອງຮັບການຄົ້ນຫາ, ກັ່ນຕອງ, ແລ ການ pagination.
+        </p>
+
+        <!-- ── Add Transaction ── -->
+        <h3 style="font-family:var(--font-body);font-size:1.125rem;font-weight:600;color:var(--on-surface);margin-bottom:1rem;">ການເພີ່ມລາຍການໃໝ່</h3>
+        <ol class="steps">
+          <li class="step">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <h4>ກົດປຸ່ມ "ເພີ່ມລາຍການ"</h4>
+              <p>ປຸ່ມສີດຳ ຢູ່ດ້ານຂວາເທິງ. Modal form ຈະເປີດຂຶ້ນ.</p>
+            </div>
+          </li>
+          <li class="step">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <h4>ເລືອກປະເພດ</h4>
+              <p>
+                <span class="badge badge-income">ລາຍຮັບ</span> ສຳລັບເງິນທີ່ຮັບ (ເງິນເດືອນ, bonus, ລາຍໄດ້ຈາກ freelance)
+                <br/>
+                <span class="badge badge-expense">ລາຍຈ່າຍ</span> ສຳລັບເງິນທີ່ຈ່າຍ (ອາຫານ, ຄ່າເຊົ່າ, ໄຟຟ້າ)
+              </p>
+            </div>
+          </li>
+          <li class="step">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <h4>ກອກຂໍ້ມູນ</h4>
+              <div class="form-preview">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">ລາຍລະອຽດ *</label>
+                    <input class="form-input" type="text" value="ເງິນເດືອນ" readonly />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">ຈຳນວນ (₭) *</label>
+                    <input class="form-input" type="text" value="15,000,000" readonly />
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">ໝວດໝູ່</label>
+                    <input class="form-input" type="text" value="Salary" readonly />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">ວັນທີ *</label>
+                    <input class="form-input" type="text" value="01/04/2026" readonly />
+                  </div>
+                </div>
+                <div class="form-row full">
+                  <div class="form-group">
+                    <label class="form-label">ໝາຍເຫດ (ທາງເລືອກ)</label>
+                    <input class="form-input" type="text" value="" readonly />
+                  </div>
+                </div>
+              </div>
+              <p>ຊ່ອງທີ່ມີ * ບັງຄັບ. ໝວດໝູ່ ແລ ໝາຍເຫດ ເປັນທາງເລືອກ.</p>
+            </div>
+          </li>
+          <li class="step">
+            <div class="step-num">4</div>
+            <div class="step-body">
+              <h4>ກົດ "ບັນທຶກ"</h4>
+              <p>ລາຍການຈະຖືກບັນທຶກ ແລ ໜ້າ reload ພ້ອມແຈ້ງເຕືອນ "ເພີ່ມລາຍການສຳເລັດ".</p>
+            </div>
+          </li>
+        </ol>
+
+        <hr class="divider" />
+
+        <!-- ── Search & Filter ── -->
+        <h3 style="font-family:var(--font-body);font-size:1.125rem;font-weight:600;color:var(--on-surface);margin-bottom:1rem;">ການຄົ້ນຫາ ແລ ກັ່ນຕອງ</h3>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Field ກັ່ນຕອງ</th>
+              <th>ຄຳອະທິບາຍ</th>
+              <th>ຕົວຢ່າງ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>ຄຳຄົ້ນຫາ (q)</strong></td>
+              <td>ຄົ້ນຈາກ ລາຍລະອຽດ ຫຼື ໝາຍເຫດ</td>
+              <td><code>ເງິນເດືອນ</code></td>
+            </tr>
+            <tr>
+              <td><strong>ປະເພດ</strong></td>
+              <td>ເລືອກ: ທັງໝົດ / ລາຍຮັບ / ລາຍຈ່າຍ</td>
+              <td><span class="badge badge-income">ລາຍຮັບ</span></td>
+            </tr>
+            <tr>
+              <td><strong>ໝວດໝູ່</strong></td>
+              <td>ກັ່ນຕາມໝວດໝູ່ທີ່ເລືອກ</td>
+              <td>Food &amp; Dining</td>
+            </tr>
+            <tr>
+              <td><strong>ວັນທີ ຈາກ–ຫາ</strong></td>
+              <td>ຊ່ວງວັນທີທີ່ຕ້ອງການ</td>
+              <td>01/04 – 30/04/2026</td>
+            </tr>
+            <tr>
+              <td><strong>ຈຳນວນ ຕ່ຳ–ສູງ</strong></td>
+              <td>ຊ່ວງຈຳນວນເງິນ</td>
+              <td>500,000 – 5,000,000 ₭</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="callout callout-info">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <p><strong>Summary Bar:</strong> ຕອນທີ່ໃຊ້ filter ຈະມີ bar ສະແດງ ລວມລາຍຮັບ, ລວມລາຍຈ່າຍ ຂອງຜົນຄົ້ນຫາ ໂດຍອັດຕະໂນມັດ.</p>
+        </div>
+
+        <hr class="divider" />
+
+        <!-- ── Edit / Delete ── -->
+        <h3 style="font-family:var(--font-body);font-size:1.125rem;font-weight:600;color:var(--on-surface);margin-bottom:1rem;">ການແກ້ໄຂ ແລ ລຶບລາຍການ</h3>
+        <div class="features-grid" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr))">
+          <div class="feature-card">
+            <div class="feature-card-header">
+              <div class="feature-dot" style="background:#2563EB"></div>
+              <h3>ແກ້ໄຂ (Edit)</h3>
+            </div>
+            <p>ກົດ icon ດິນສໍ <kbd>✎</kbd> ທາງຂວາຂອງລາຍການ → Modal ຈະໂຫຼດຂໍ້ມູນເດີມ → ແກ້ໄຂ → "ອັບເດດ".</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-header">
+              <div class="feature-dot" style="background:var(--error)"></div>
+              <h3>ລຶບ (Delete)</h3>
+            </div>
+            <p>ກົດ icon ຖັງຂີ້ເຫຍື້ອ <kbd>🗑</kbd> → ກ່ອງຢືນຢັນຈະຂຶ້ນ → ກົດ "ຢືນຢັນ" ເພື່ອລຶບຖາວອນ.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-header">
+              <div class="feature-dot" style="background:#D97706"></div>
+              <h3>Pagination</h3>
+            </div>
+            <p>ລາຍການຖືກແບ່ງໜ້າ (ຄ່າ default: 15 ລາຍການ/ໜ້າ). ຕັ້ງຄ່າໄດ້ໃນ Settings.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════════════════
+           03 · BUDGET
+      ════════════════════════════════════════════ -->
+      <section class="section" id="budget">
+        <div class="section-header">
+          <div class="section-icon icon-bg-blue">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+          <div class="section-title-group">
+            <p class="section-eyebrow">ໂໝດ 03</p>
+            <h2 class="section-title">ງົບປະມານ</h2>
+            <p class="section-url">URL: <code>/Wat_Financial/budget</code></p>
+          </div>
+        </div>
+
+        <p style="font-size:1rem; color:var(--on-surface-variant); margin-bottom:2rem;">
+          ຕັ້ງງົບປະມານ ຕໍ່ໝວດໝູ່ ຕໍ່ເດືອນ ແລ ຕິດຕາມວ່າໃຊ້ຈ່າຍໄປເທົ່າໃດ ທຽບກັບງົບທີ່ວາງໄວ້.
+        </p>
+
+        <!-- Budget Progress Example -->
+        <div class="mockup">
+          <div class="mockup-bar">
+            <div class="mockup-dot" style="background:#FF605C"></div>
+            <div class="mockup-dot" style="background:#FFBD44"></div>
+            <div class="mockup-dot" style="background:#00CA4E"></div>
+            <div class="mockup-url">localhost/Wat_Financial/budget?month=2026-04</div>
+          </div>
+          <div class="mockup-body">
+            <div class="progress-wrap">
+              <div class="progress-meta">
+                <span style="font-weight:600">🍽 Food &amp; Dining</span>
+                <span>₭ 1,380,000 / ₭ 2,000,000</span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill" style="width:69%"></div></div>
+              <div style="font-family:var(--font-ui);font-size:0.7rem;color:var(--on-surface-variant);margin-top:3px;">ຍັງເຫຼືອ ₭ 620,000 · 69%</div>
+            </div>
+            <div class="progress-wrap">
+              <div class="progress-meta">
+                <span style="font-weight:600">🚗 Transport</span>
+                <span>₭ 680,000 / ₭ 600,000</span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill over" style="width:100%"></div></div>
+              <div style="font-family:var(--font-ui);font-size:0.7rem;color:var(--on-tertiary-variant);margin-top:3px;">⚠ ເກີນງົບ ₭ 80,000 (113%)</div>
+            </div>
+            <div class="progress-wrap">
+              <div class="progress-meta">
+                <span style="font-weight:600">🏠 Housing</span>
+                <span>₭ 800,000 / ₭ 1,000,000</span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill" style="width:80%"></div></div>
+              <div style="font-family:var(--font-ui);font-size:0.7rem;color:var(--on-surface-variant);margin-top:3px;">ຍັງເຫຼືອ ₭ 200,000 · 80%</div>
+            </div>
+          </div>
+        </div>
+
+        <h3 style="font-family:var(--font-body);font-size:1.125rem;font-weight:600;color:var(--on-surface);margin-bottom:1rem;">ການຕັ້ງງົບປະມານ</h3>
+        <ol class="steps">
+          <li class="step">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <h4>ເລືອກເດືອນ</h4>
+              <p>ໃຊ້ month picker ທາງຂວາເທິງ ເພື່ອເລືອກເດືອນທີ່ຕ້ອງການຕັ້ງງົບ. ຄ່າ default ຄືເດືອນປັດຈຸບັນ.</p>
+            </div>
+          </li>
+          <li class="step">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <h4>ກົດ "ຕັ້ງງົບໃໝ່"</h4>
+              <p>ເລືອກ <strong>ໝວດໝູ່</strong> ແລ ໃສ່ <strong>ຈຳນວນງົບ</strong> ທີ່ຕ້ອງການ. ໝວດໝູ່ 1 ອັນ ຕໍ່ 1 ເດືອນ ມີໄດ້ 1 ງົບ.</p>
+            </div>
+          </li>
+          <li class="step">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <h4>ຕິດຕາມ Progress</h4>
+              <p>ລະບົບຄຳນວນຍອດ "ໃຊ້ຈ່າຍ" ຈາກ transactions ໝວດໝູ່ນັ້ນ ໃນເດືອນນັ້ນໂດຍອັດຕະໂນມັດ.</p>
+            </div>
+          </li>
+        </ol>
+
+        <div class="callout callout-warn">
+          <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <p><strong>ງົບເກີນ:</strong> ຖ້າ progress bar ສະແດງສີແດງ ໝາຍຄວາມວ່າໃຊ້ຈ່າຍເກີນງົບທີ່ຕັ້ງໄວ້ ໃນໝວດໝູ່ນັ້ນ.</p>
+        </div>
+
+        <table class="data-table">
+          <thead>
+            <tr><th>ສ່ວນ</th><th>ຄວາມໝາຍ</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>ງົບທີ່ຕັ້ງ</strong></td><td>ຈຳນວນງົບທີ່ທ່ານກຳນົດໄວ້</td></tr>
+            <tr><td><strong>ໃຊ້ຈ່າຍໄປ</strong></td><td>ລວມ expense ໝວດໝູ່ນັ້ນ ໃນເດືອນທີ່ເລືອກ</td></tr>
+            <tr><td><strong>ຍັງເຫຼືອ</strong></td><td>ງົບຕັ້ງ – ໃຊ້ຈ່າຍ (ສີຂຽວ = ຍັງໃນງົບ)</td></tr>
+            <tr><td><strong>ເກີນງົບ</strong></td><td>ໃຊ້ຈ່າຍ – ງົບຕັ້ງ (ສີແດງ = ຕ້ອງລະວັງ)</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ════════════════════════════════════════════
+           04 · SAVINGS GOALS
+      ════════════════════════════════════════════ -->
+      <section class="section" id="goals">
+        <div class="section-header">
+          <div class="section-icon icon-bg-purple">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+          </div>
+          <div class="section-title-group">
+            <p class="section-eyebrow">ໂໝດ 04</p>
+            <h2 class="section-title">ເປົ້າໝາຍການເງິນ</h2>
+            <p class="section-url">URL: <code>/Wat_Financial/goals</code></p>
+          </div>
+        </div>
+
+        <p style="font-size:1rem; color:var(--on-surface-variant); margin-bottom:2rem;">
+          ສ້າງເປົ້າໝາຍການເງິນ ເຊັ່ນ: ຊື້ລົດ, ທ່ອງທ່ຽວ, ກອງທຶນສຸກເສີນ ແລ ຕິດຕາມຄວາມຄືບໜ້າ.
+        </p>
+
+        <h3 style="font-family:var(--font-body);font-size:1.125rem;font-weight:600;color:var(--on-surface);margin-bottom:1rem;">ການສ້າງເປົ້າໝາຍໃໝ່</h3>
+
+        <div class="form-preview">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">ຊື່ເປົ້າໝາຍ *</label>
+              <input class="form-input" type="text" value="ຊື້ລົດຈັກ Honda PCX" readonly />
+            </div>
+            <div class="form-group">
+              <label class="form-label">ຈຳນວນເປົ້າໝາຍ (₭) *</label>
+              <input class="form-input" type="text" value="15,000,000" readonly />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">ຈຳນວນທີ່ສະສົມໄດ້ແລ້ວ</label>
+              <input class="form-input" type="text" value="3,500,000" readonly />
+            </div>
+            <div class="form-group">
+              <label class="form-label">ວັນທີເປົ້າໝາຍ</label>
+              <input class="form-input" type="text" value="31/12/2026" readonly />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">ສີ</label>
+              <input class="form-input" type="text" value="#5A7AF0" readonly />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Icon</label>
+              <input class="form-input" type="text" value="car" readonly />
+            </div>
+          </div>
+        </div>
+
+        <h3 style="font-family:var(--font-body);font-size:1.125rem;font-weight:600;color:var(--on-surface);margin:1.5rem 0 1rem;">ການເພີ່ມເງິນເຂົ້າເປົ້າໝາຍ</h3>
+
+        <ol class="steps">
+          <li class="step">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <h4>ຊອກຫາ Card ເປົ້າໝາຍ</h4>
+              <p>ແຕ່ລະ card ຈະສະແດງ progress bar, ຈຳນວນທີ່ສະສົມ, ແລ ຈຳນວນທີ່ຍັງຂາດ.</p>
+            </div>
+          </li>
+          <li class="step">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <h4>ກົດ "ເພີ່ມເງິນ"</h4>
+              <p>ໃສ່ຈຳນວນທີ່ຕ້ອງການ deposit ເຂົ້າເປົ້າໝາຍ. ລະບົບຈະ update progress bar ທັນທີ.</p>
+            </div>
+          </li>
+          <li class="step">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <h4>ເປົ້າໝາຍສຳເລັດ</h4>
+              <p>ຕອນ <code>current_amount</code> ຮອດ <code>target_amount</code> ລະບົບຈະໝາຍ ✅ Completed ໃຫ້ອັດຕະໂນມັດ.</p>
+            </div>
+          </li>
+        </ol>
+
+        <div class="callout callout-success">
+          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          <p><strong>ຂໍ້ດີ:</strong> ເປົ້າໝາຍທີ່ສຳເລັດຈະຖືກແຍກສະແດງ ເພື່ອໃຫ້ເຫັນຜົນສຳເລັດທີ່ຜ່ານມາ ແລ ສ້າງ motivation.</p>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════════════════
+           05 · REPORTS
+      ════════════════════════════════════════════ -->
+      <section class="section" id="reports">
+        <div class="section-header">
+          <div class="section-icon icon-bg-teal">
+            <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <div class="section-title-group">
+            <p class="section-eyebrow">ໂໝດ 05</p>
+            <h2 class="section-title">ລາຍງານ</h2>
+            <p class="section-url">URL: <code>/Wat_Financial/reports</code></p>
+          </div>
+        </div>
+
+        <p style="font-size:1rem; color:var(--on-surface-variant); margin-bottom:2rem;">
+          ລາຍງານທາງການເງິນ ລາຍປີ — ສະຫຼຸບ ລາຍຮັບ, ລາຍຈ່າຍ ແລ ຍອດສຸດທິ ທຸກ 12 ເດືອນ ພ້ອມ chart ແລ ໝວດໝູ່ຍອດນິຍົມ.
+        </p>
+
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-card-header">
+              <div class="feature-dot" style="background:#0D9488"></div>
+              <h3>ສະຫຼຸບລາຍປີ</h3>
+            </div>
+            <p>KPI 3 ຕົວ: <strong>ລວມລາຍຮັບ</strong>, <strong>ລວມລາຍຈ່າຍ</strong>, <strong>ຍອດສຸດທິ</strong> ທັງປີ. ໃຊ້ selector ດ້ານຂວາເພື່ອເບິ່ງປີຕ່າງໆ.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-header">
+              <div class="feature-dot" style="background:#2563EB"></div>
+              <h3>ຕາຕະລາງ 12 ເດືອນ</h3>
+            </div>
+            <p>ແຕ່ລະເດືອນສະແດງ: ລາຍຮັບ, ລາຍຈ່າຍ, ຍອດ net ສີຂຽວ (+ ໄດ້) ຫຼື ສີແດງ (– ຂາດ).</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-header">
+              <div class="feature-dot" style="background:#7C3AED"></div>
+              <h3>Top Categories</h3>
+            </div>
+            <p>ສະແດງ 5 ໝວດໝູ່ທີ່ໃຊ້ຈ່າຍສູງສຸດໃນປີ ພ້ອມ bar chart ແລ ຈຳນວນ % ຂອງທັງໝົດ.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-header">
+              <div class="feature-dot" style="background:#D97706"></div>
+              <h3>ເລືອກປີ</h3>
+            </div>
+            <p>ກົດ ← → ທີ່ &#x27A9; year selector ເພື່ອເດີນທາງລະຫວ່າງປີ. ລະບົບໂຫຼດຂໍ້ມູນໃໝ່ທັນທີ.</p>
+          </div>
+        </div>
+
+        <div class="callout callout-info">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <p><strong>Export:</strong> ໃນໜ້ານີ້ມີປຸ່ມ "Export CSV" ແລ "Export PDF" ຢູ່ດ້ານຂວາ ສຳລັບດາວໂຫຼດລາຍງານ. ລາຍລະອຽດ <a href="#export" style="color:inherit;font-weight:600">→ ໂໝດ Export</a>.</p>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════════════════
+           06 · RECURRING
+      ════════════════════════════════════════════ -->
+      <section class="section" id="recurring">
+        <div class="section-header">
+          <div class="section-icon icon-bg-amber">
+            <svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+          </div>
+          <div class="section-title-group">
+            <p class="section-eyebrow">ໂໝດ 06</p>
+            <h2 class="section-title">ລາຍການຊ້ຳ</h2>
+            <p class="section-url">URL: <code>/Wat_Financial/recurring</code></p>
+          </div>
+        </div>
+
+        <p style="font-size:1rem; color:var(--on-surface-variant); margin-bottom:2rem;">
+          ບັນທຶກລາຍການທີ່ເກີດຊ້ຳເປັນປະຈຳ ເຊັ່ນ: ເງິນເດືອນ, ຄ່າເຊົ່າ, ຄ່ານ້ຳ-ໄຟ ແລ ສ້າງ transaction ຈາກ template ໄດ້ດ້ວຍ 1 click.
+        </p>
+
+        <table class="data-table">
+          <thead>
+            <tr><th>Field</th><th>ຄຳອະທິບາຍ</th><th>ຕົວຢ່າງ</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>ຄວາມຖີ່ (Frequency)</strong></td>
+              <td>ຮອບການທຳຊ້ຳ</td>
+              <td>
+                <span class="badge badge-slate">daily</span>
+                <span class="badge badge-slate">weekly</span>
+                <span class="badge badge-income">monthly</span>
+                <span class="badge badge-blue">yearly</span>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>ວັນທີໃນເດືອນ</strong></td>
+              <td>ວັນທີ 1-31 (ສຳລັບ monthly)</td>
+              <td>ວັນທີ 1 = ຕ້ອນເດືອນ</td>
+            </tr>
+            <tr>
+              <td><strong>ວັນທີເລີ່ມຕົ້ນ</strong></td>
+              <td>ວັນທີ trigger ຄັ້ງທຳອິດ</td>
+              <td>01/01/2026</td>
+            </tr>
+            <tr>
+              <td><strong>ວັນທີໝົດກຳນົດ</strong></td>
+              <td>ວ່າງ = ບໍ່ໝົດກຳນົດ</td>
+              <td>31/12/2026</td>
+            </tr>
+            <tr>
+              <td><strong>ຄັ້ງຕໍ່ໄປ</strong></td>
+              <td>ວັນທີ generate ຄັ້ງຕໍ່ໄປ</td>
+              <td>01/05/2026</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3 style="font-family:var(--font-body);font-size:1.125rem;font-weight:600;color:var(--on-surface);margin-bottom:1rem;">ຟັງຊັ້ນທີ່ໃຊ້ໄດ້</h3>
+        <div class="features-grid" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr))">
+          <div class="feature-card">
+            <div class="feature-card-header">
+              <div class="feature-dot" style="background:var(--secondary)"></div>
+              <h3>ສ້າງລາຍການ (Generate)</h3>
+            </div>
+            <p>ກົດ "ສ້າງ" ໃນ row ທີ່ຕ້ອງການ → ລາຍການທຸລະກຳຈະຖືກ insert ທັນທີ ພ້ອມ update "ຄັ້ງຕໍ່ໄປ" ໂດຍອັດຕະໂນມັດ.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-header">
+              <div class="feature-dot" style="background:#D97706"></div>
+              <h3>ເປີດ/ປິດ (Toggle)</h3>
+            </div>
+            <p>ກົດ switch ເພື່ອ enable/disable. ລາຍການທີ່ປິດ <span class="badge badge-slate">inactive</span> ຈະ generate ບໍ່ໄດ້.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-header">
+              <div class="feature-dot" style="background:var(--error)"></div>
+              <h3>ລຶບ (Delete)</h3>
+            </div>
+            <p>ລຶບ template ລາຍການຊ້ຳ. ລາຍການທຸລະກຳທີ່ generate ໄປແລ້ວ ຈະ<strong>ບໍ່ຖືກລຶບ</strong>.</p>
+          </div>
+        </div>
+
+        <div class="callout callout-warn">
+          <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <p><strong>ໝາຍເຫດ:</strong> ລະບົບ<strong>ບໍ່</strong>ສ້າງລາຍການ Auto ຂຶ້ນເອງ. ຕ້ອງກົດ "ສ້າງ" ດ້ວຍຕົນເອງ ທຸກຄັ້ງທີ່ຕ້ອງການ. ຖ້າຕ້ອງການ Auto ຕ້ອງຕັ້ງ cron job ໃນ server.</p>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════════════════
+           07 · EXPORT
+      ════════════════════════════════════════════ -->
+      <section class="section" id="export">
+        <div class="section-header">
+          <div class="section-icon icon-bg-secondary">
+            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </div>
+          <div class="section-title-group">
+            <p class="section-eyebrow">ໂໝດ 07</p>
+            <h2 class="section-title">Export ຂໍ້ມູນ</h2>
+            <p class="section-url">URL: <code>/Wat_Financial/export/transactions</code> · <code>/Wat_Financial/export/report</code></p>
+          </div>
+        </div>
+
+        <p style="font-size:1rem; color:var(--on-surface-variant); margin-bottom:2rem;">
+          ດາວໂຫຼດຂໍ້ມູນການເງິນໃນຮູບແບບ CSV (ສຳລັບ Excel) ຫຼື PDF (ສຳລັບພິມ) ໄດ້ 2 ແບບ.
+        </p>
+
+        <div class="features-grid" style="grid-template-columns:1fr 1fr">
+          <!-- CSV -->
+          <div class="feature-card" style="border-left:3px solid var(--secondary)">
+            <div class="feature-card-header">
+              <div class="feature-dot" style="background:var(--secondary)"></div>
+              <h3>CSV / Excel</h3>
+            </div>
+            <p>ດາວໂຫຼດ <code>.csv</code> ທີ່ມີ BOM encoding ສຳລັບ Excel ໃຫ້ຮຮຕົວໜັງສືລາວຖືກຕ້ອງ.</p>
+            <ul style="font-family:var(--font-body);font-size:0.875rem;color:var(--on-surface-variant);margin-top:0.75rem;padding-left:1.25rem;line-height:2">
+              <li>ລາຍລະອຽດທຸກ transaction</li>
+              <li>ໝວດໝູ່, ວັນທີ, ໝາຍເຫດ</li>
+              <li>Summary rows (ລວມ income/expense)</li>
+            </ul>
+          </div>
+          <!-- PDF -->
+          <div class="feature-card" style="border-left:3px solid #2563EB">
+            <div class="feature-card-header">
+              <div class="feature-dot" style="background:#2563EB"></div>
+              <h3>PDF (Print View)</h3>
+            </div>
+            <p>HTML print view ທີ່ browser ຈະ render ເປັນ PDF. ໃຊ້ <kbd>Ctrl+P</kbd> ຫຼື <kbd>⌘+P</kbd> ໃນ browser ເພື່ອ save PDF.</p>
+            <ul style="font-family:var(--font-body);font-size:0.875rem;color:var(--on-surface-variant);margin-top:0.75rem;padding-left:1.25rem;line-height:2">
+              <li>Layout ສວຍງາມ ສຳລັບພິມ</li>
+              <li>Header, footer, ຊື່ Report</li>
+              <li>ສີ income/expense ຮັກສາໄວ້</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3 style="font-family:var(--font-body);font-size:1.125rem;font-weight:600;color:var(--on-surface);margin:1.5rem 0 1rem;">ປະເພດ Export</h3>
+
+        <table class="data-table">
+          <thead>
+            <tr><th>ປະເພດ</th><th>ທາງເລືອກ</th><th>ໃຊ້ງານ</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Transactions Export</strong></td>
+              <td>ຮອງຮັບ filter ດຽວກັນກັບໜ້າ Transactions (ຄົ້ນຫາ, ວັນທີ, ໝວດ...)</td>
+              <td>ໜ້າ Transactions → ປຸ່ມ "Export"</td>
+            </tr>
+            <tr>
+              <td><strong>Monthly Report</strong></td>
+              <td>Export ລາຍການທຸກຕົວ ຂອງເດືອນໃດໜຶ່ງ</td>
+              <td>ໜ້າ Reports → "Export CSV/PDF" → ເລືອກເດືອນ</td>
+            </tr>
+            <tr>
+              <td><strong>Yearly Report</strong></td>
+              <td>ສະຫຼຸບ 12 ເດືອນ + ລາຍການທຸກຕົວ ໃນ CSV ດຽວ</td>
+              <td>ໜ້າ Reports → "Export CSV/PDF" → ບໍ່ລະບຸເດືອນ</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="callout callout-info">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <p><strong>ຊື່ໄຟລ໌:</strong> CSV ຈະຕັ້ງຊື່ດ້ວຍ timestamp ໂດຍອັດຕະໂນມັດ ເຊັ່ນ <code>transactions_20260415_143022.csv</code> ຫຼື <code>report_2026_20260415.csv</code>.</p>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════════════════
+           08 · CATEGORIES
+      ════════════════════════════════════════════ -->
+      <section class="section" id="categories">
+        <div class="section-header">
+          <div class="section-icon icon-bg-pink">
+            <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          </div>
+          <div class="section-title-group">
+            <p class="section-eyebrow">ໂໝດ 08</p>
+            <h2 class="section-title">ໝວດໝູ່</h2>
+            <p class="section-url">URL: <code>/Wat_Financial/categories</code></p>
+          </div>
+        </div>
+
+        <p style="font-size:1rem; color:var(--on-surface-variant); margin-bottom:2rem;">
+          ຈັດການໝວດໝູ່ (Category) ທີ່ໃຊ້ຈັດກຸ່ມ transactions, budgets ແລ reports.
+        </p>
+
+        <h3 style="font-family:var(--font-body);font-size:1.125rem;font-weight:600;color:var(--on-surface);margin-bottom:1rem;">ໝວດໝູ່ Default (10 ອັນ)</h3>
+
+        <table class="data-table">
+          <thead>
+            <tr><th>ໝວດໝູ່</th><th>ສີ</th><th>ໃຊ້ສຳລັບ</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Salary</td><td><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#006C49;vertical-align:middle;margin-right:6px"></span>#006C49</td><td>ເງິນເດືອນ</td></tr>
+            <tr><td>Freelance</td><td><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#4EDEA3;vertical-align:middle;margin-right:6px"></span>#4EDEA3</td><td>ລາຍໄດ້ Freelance</td></tr>
+            <tr><td>Food &amp; Dining</td><td><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#FF8C00;vertical-align:middle;margin-right:6px"></span>#FF8C00</td><td>ອາຫານ, ຮ້ານກາເຟ</td></tr>
+            <tr><td>Transport</td><td><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#5A7AF0;vertical-align:middle;margin-right:6px"></span>#5A7AF0</td><td>ລົດ, ນ້ຳມັນ, ລົດໂດຍສານ</td></tr>
+            <tr><td>Housing</td><td><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#8B5CF6;vertical-align:middle;margin-right:6px"></span>#8B5CF6</td><td>ຄ່າເຊົ່າ, ຄ່າຊ່ອມ</td></tr>
+            <tr><td>Healthcare</td><td><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#EC4899;vertical-align:middle;margin-right:6px"></span>#EC4899</td><td>ຢາ, ໂຮງໝໍ</td></tr>
+            <tr><td>Education</td><td><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#0EA5E9;vertical-align:middle;margin-right:6px"></span>#0EA5E9</td><td>ຮຽນ, ໜັງສື, course</td></tr>
+            <tr><td>Shopping</td><td><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#F59E0B;vertical-align:middle;margin-right:6px"></span>#F59E0B</td><td>ເຄື່ອງໃຊ້ຕ່າງໆ</td></tr>
+            <tr><td>Entertainment</td><td><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#EF4444;vertical-align:middle;margin-right:6px"></span>#EF4444</td><td>ຄອນເສີດ, ຮູບເງົາ</td></tr>
+            <tr><td>Utilities</td><td><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#6B7280;vertical-align:middle;margin-right:6px"></span>#6B7280</td><td>ໄຟຟ້າ, ນ້ຳ, ອິນເຕີເນັດ</td></tr>
+          </tbody>
+        </table>
+
+        <h3 style="font-family:var(--font-body);font-size:1.125rem;font-weight:600;color:var(--on-surface);margin:1.5rem 0 1rem;">ຟັງຊັ້ນ CRUD</h3>
+        <div class="features-grid" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr))">
+          <div class="feature-card">
+            <div class="feature-card-header">
+              <div class="feature-dot" style="background:var(--secondary)"></div>
+              <h3>ສ້າງໝວດໝູ່ໃໝ່</h3>
+            </div>
+            <p>ໃສ່ <strong>ຊື່</strong>, ເລືອກ <strong>ສີ</strong> (color picker), ແລ ໃສ່ <strong>ຊື່ icon</strong> (Feather icons). ກົດ "ສ້າງ".</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-header">
+              <div class="feature-dot" style="background:#2563EB"></div>
+              <h3>ແກ້ໄຂ</h3>
+            </div>
+            <p>ກົດ icon ດິນສໍ ທີ່ row ໝວດໝູ່ → ແກ້ຊື່, ສີ, icon → "ອັບເດດ".</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-header">
+              <div class="feature-dot" style="background:var(--error)"></div>
+              <h3>ລຶບ</h3>
+            </div>
+            <p>ລຶບໄດ້ຖ້າ<strong>ບໍ່ມີ</strong> transaction ໃຊ້ງານ. ຖ້າມີ transaction ລາຍການນັ້ນຈະ set category = NULL.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-header">
+              <div class="feature-dot" style="background:#D97706"></div>
+              <h3>Stats ຂອງໝວດ</h3>
+            </div>
+            <p>ໜ້ານີ້ສະແດງ <strong>ຈຳນວນ transaction</strong> ແລ <strong>ລວມຈຳນວນ</strong> ຂອງແຕ່ລະໝວດ ເພື່ອຊ່ວຍຕັດສິນໃຈ.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════════════════
+           09 · SETTINGS
+      ════════════════════════════════════════════ -->
+      <section class="section" id="settings">
+        <div class="section-header">
+          <div class="section-icon icon-bg-slate">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </div>
+          <div class="section-title-group">
+            <p class="section-eyebrow">ໂໝດ 09</p>
+            <h2 class="section-title">ການຕັ້ງຄ່າ</h2>
+            <p class="section-url">URL: <code>/Wat_Financial/settings</code></p>
+          </div>
+        </div>
+
+        <p style="font-size:1rem; color:var(--on-surface-variant); margin-bottom:2rem;">
+          ໜ້ານີ້ປະກອບດ້ວຍ 3 ສ່ວນ: ຕັ້ງຄ່າລະບົບ, ແກ້ໄຂໂປຣໄຟລ໌, ແລ ປ່ຽນລະຫັດຜ່ານ.
+        </p>
+
+        <!-- ── App Settings ── -->
+        <h3 style="font-family:var(--font-body);font-size:1.125rem;font-weight:600;color:var(--on-surface);margin-bottom:1rem;">
+          ສ່ວນທີ 1 — ຕັ້ງຄ່າລະບົບ
+        </h3>
+
+        <table class="data-table">
+          <thead>
+            <tr><th>ການຕັ້ງຄ່າ</th><th>ຄຳອະທິບາຍ</th><th>ຄ່າ Default</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>ຊື່ແອັບ</strong></td><td>ຊື່ທີ່ສະແດງໃນ browser tab ແລ header</td><td>Wat Financial</td></tr>
+            <tr><td><strong>ສັນຍາລັກເງິນຕາ</strong></td><td>ສະແດງໜ້າຕົວເລກ</td><td>₭</td></tr>
+            <tr><td><strong>ລະຫັດເງິນຕາ</strong></td><td>ໃຊ້ໃນ Export</td><td>LAK</td></tr>
+            <tr><td><strong>ພາສາ / Locale</strong></td><td>ຮູບແບບວັນທີ ແລ ຕົວເລກ</td><td>lo_LA</td></tr>
+            <tr><td><strong>ໂຊນເວລາ</strong></td><td>ໂຊນ server</td><td>Asia/Vientiane</td></tr>
+            <tr><td><strong>ຮູບແບບວັນທີ</strong></td><td>PHP date format</td><td>d/m/Y</td></tr>
+            <tr><td><strong>ວັນເລີ່ມຕົ້ນອາທິດ</strong></td><td>monday ຫຼື sunday</td><td>monday</td></tr>
+            <tr><td><strong>ຈຳນວນທົດສະນິຍົມ</strong></td><td>0 = ບໍ່ສະແດງ decimal</td><td>0</td></tr>
+            <tr><td><strong>ລາຍການຕໍ່ໜ້າ</strong></td><td>Pagination size (ຕ່ຳສຸດ 5)</td><td>15</td></tr>
+            <tr><td><strong>ສີຫຼັກ</strong></td><td>Theme primary color</td><td>#091426</td></tr>
+          </tbody>
+        </table>
+
+        <hr class="divider" />
+
+        <!-- ── Profile ── -->
+        <h3 style="font-family:var(--font-body);font-size:1.125rem;font-weight:600;color:var(--on-surface);margin-bottom:1rem;">
+          ສ່ວນທີ 2 — ໂປຣໄຟລ໌ຜູ້ໃຊ້
+        </h3>
+
+        <div class="form-preview">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">ຊື່ *</label>
+              <input class="form-input" type="text" value="ຜູ້ດູແລລະບົບ" readonly />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email *</label>
+              <input class="form-input" type="email" value="admin@watfinancial.local" readonly />
+            </div>
+          </div>
+          <div style="margin-top:0.5rem">
+            <button class="form-btn btn-primary">ອັບເດດໂປຣໄຟລ໌</button>
+          </div>
+        </div>
+
+        <hr class="divider" />
+
+        <!-- ── Password ── -->
+        <h3 style="font-family:var(--font-body);font-size:1.125rem;font-weight:600;color:var(--on-surface);margin-bottom:1rem;">
+          ສ່ວນທີ 3 — ປ່ຽນລະຫັດຜ່ານ
+        </h3>
+
+        <div class="form-preview">
+          <div class="form-row full">
+            <div class="form-group">
+              <label class="form-label">ລະຫັດຜ່ານປັດຈຸບັນ *</label>
+              <input class="form-input" type="password" value="••••••••" readonly />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">ລະຫັດຜ່ານໃໝ່ * (ຢ່າງໜ້ອຍ 6 ຕົວ)</label>
+              <input class="form-input" type="password" value="••••••••••" readonly />
+            </div>
+            <div class="form-group">
+              <label class="form-label">ຢືນຢັນລະຫັດຜ່ານໃໝ່ *</label>
+              <input class="form-input" type="password" value="••••••••••" readonly />
+            </div>
+          </div>
+          <div style="margin-top:0.5rem">
+            <button class="form-btn btn-primary">ປ່ຽນລະຫັດຜ່ານ</button>
+          </div>
+        </div>
+
+        <div class="callout callout-danger">
+          <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <p><strong>ຄວາມປອດໄພ:</strong> ຫຼັງຈາກປ່ຽນລະຫັດຜ່ານ ກະລຸນາ logout ແລ login ໃໝ່ ເພື່ອຄວາມປອດໄພຂອງ session. ລະຫັດຜ່ານໃໝ່ຕ້ອງ<strong>ຢ່າງໜ້ອຍ 6 ຕົວອັກສອນ</strong>.</p>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════════════════
+           AUTH
+      ════════════════════════════════════════════ -->
+      <section class="section" id="auth">
+        <div class="section-header">
+          <div class="section-icon icon-bg-primary">
+            <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <div class="section-title-group">
+            <p class="section-eyebrow">ການຢືນຢັນຕົວຕົນ</p>
+            <h2 class="section-title">Login / Logout</h2>
+            <p class="section-url">URL: <code>/Wat_Financial/auth/login</code></p>
+          </div>
+        </div>
+
+        <div class="features-grid" style="grid-template-columns:1fr 1fr">
+          <div class="feature-card">
+            <div class="feature-card-header">
+              <div class="feature-dot" style="background:var(--secondary)"></div>
+              <h3>Login</h3>
+            </div>
+            <p>ໃສ່ <strong>Email</strong> ແລ <strong>Password</strong> → ກົດ Login. Session ຈະຖືກສ້າງ ແລ redirect ໄປ Dashboard.</p>
+            <div style="margin-top:0.75rem;background:var(--surface-low);border-radius:var(--radius);padding:0.75rem">
+              <div style="font-family:var(--font-ui);font-size:0.7rem;color:var(--on-surface-variant);margin-bottom:4px">Default credentials:</div>
+              <div style="font-family:var(--font-ui);font-size:0.8125rem;color:var(--on-surface)">admin@watfinancial.local</div>
+              <div style="font-family:var(--font-ui);font-size:0.8125rem;color:var(--on-surface)">admin123</div>
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-header">
+              <div class="feature-dot" style="background:var(--error)"></div>
+              <h3>Logout</h3>
+            </div>
+            <p>ກົດ icon <strong>Logout</strong> ທີ່ sidebar ດ້ານລຸ່ມ ຫຼື ຜ່ານເມນູ profile. Session ຈະຖືກ destroy ທັນທີ.</p>
+          </div>
+        </div>
+
+        <div class="callout callout-warn">
+          <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <p><strong>ສຳຄັນ:</strong> ທຸກໜ້າໃນລະບົບ ຕ້ອງ login ກ່ອນ. ຖ້າ session ໝົດ ລະບົບຈະ redirect ໄປໜ້າ login ໂດຍອັດຕະໂນມັດ.</p>
+        </div>
+      </section>
+
+    </div><!-- /content -->
+
+    <!-- ── Footer ── -->
+    <footer class="guide-footer">
+      <h3>Wat Financial Dashboard</h3>
+      <p>ລະບົບຈັດການການເງິນສ່ວນຕົວ · PHP MVC + MySQL + TailwindCSS<br/>
+      ສ້າງດ້ວຍ Design System "Sacred Ledger" — Organic Professionalism</p>
+      <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid rgba(255,255,255,0.1);font-family:var(--font-ui);font-size:0.75rem;color:rgba(255,255,255,0.3)">
+        ຄູ່ມືນີ້ຄອບຄຸມ 9 ໂໝດ · ອັບເດດ ເມສາ 2026
+      </div>
+    </footer>
+
+  </main>
+</div><!-- /layout -->
+</body>
+</html>
