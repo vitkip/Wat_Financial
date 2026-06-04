@@ -6,6 +6,7 @@ class Database
 {
     private static ?Database $instance = null;
     private PDO $pdo;
+    private int $transactionCounter = 0;
 
     private function __construct()
     {
@@ -66,5 +67,46 @@ class Database
     public function lastInsertId(): string
     {
         return $this->pdo->lastInsertId();
+    }
+
+    public function beginTransaction(): bool
+    {
+        if ($this->transactionCounter === 0) {
+            $this->pdo->beginTransaction();
+        }
+        $this->transactionCounter++;
+        return true;
+    }
+
+    public function commit(): bool
+    {
+        if ($this->transactionCounter > 0) {
+            $this->transactionCounter--;
+        }
+        if ($this->transactionCounter === 0) {
+            return $this->pdo->commit();
+        }
+        return true;
+    }
+
+    public function rollBack(): bool
+    {
+        if ($this->transactionCounter > 0) {
+            $this->transactionCounter = 0;
+            return $this->pdo->rollBack();
+        }
+        return false;
+    }
+
+    /**
+     * Returns a live PDOStatement for row-by-row streaming.
+     * Use with foreach() to avoid loading large result sets into memory.
+     */
+    public function cursor(string $sql, array $params = []): PDOStatement
+    {
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->setFetchMode(PDO::FETCH_ASSOC);
+        $stmt->execute($params);
+        return $stmt;
     }
 }

@@ -455,7 +455,7 @@ function filterQs(array $filters, string $key = '', mixed $val = null): string
 
     .tx-header {
         display: grid;
-        grid-template-columns: 40px 1fr 180px 130px 150px 80px;
+        grid-template-columns: 40px 1fr 130px 100px 100px 120px 100px;
         gap: 12px;
         align-items: center;
         padding: 10px 20px;
@@ -485,7 +485,7 @@ function filterQs(array $filters, string $key = '', mixed $val = null): string
 
     .tx-row {
         display: grid;
-        grid-template-columns: 40px 1fr 180px 130px 150px 80px;
+        grid-template-columns: 40px 1fr 130px 100px 100px 120px 100px;
         gap: 12px;
         align-items: center;
         padding: 14px 20px;
@@ -1427,6 +1427,7 @@ function filterQs(array $filters, string $key = '', mixed $val = null): string
             <span></span>
             <span>ລາຍລະອຽດ</span>
             <span>ໝວດໝູ່</span>
+            <span>ສະຖານະ</span>
             <span>ວັນທີ</span>
             <span class="right">ຈຳນວນ</span>
             <span class="right">ດຳເນີນການ</span>
@@ -1506,6 +1507,19 @@ function filterQs(array $filters, string $key = '', mixed $val = null): string
                             </span>
                         </div>
 
+                        <!-- Status -->
+                        <div>
+                            <?php 
+                            $status = $tx['status'] ?? 'approved';
+                            if ($status === 'pending'): ?>
+                                <span style="background:#fef3c7;color:#d97706;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:bold;">ລໍຖ້າອະນຸມັດ</span>
+                            <?php elseif ($status === 'rejected'): ?>
+                                <span style="background:#fee2e2;color:#dc2626;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:bold;">ຖືກປະຕິເສດ</span>
+                            <?php else: ?>
+                                <span style="background:#dcfce3;color:#16a34a;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:bold;">ອະນຸມັດແລ້ວ</span>
+                            <?php endif; ?>
+                        </div>
+
                         <!-- Date -->
                         <div class="tx-date">
                             <?= date('d M Y', strtotime($tx['date'])) ?>
@@ -1519,6 +1533,14 @@ function filterQs(array $filters, string $key = '', mixed $val = null): string
 
                         <!-- Actions -->
                         <div class="tx-actions">
+                            <?php if ($perms->can('transactions.approve') && ($tx['status'] ?? 'approved') === 'pending'): ?>
+                                <form method="POST" action="<?= BASE_URL ?>/transactions/approve/<?= (int) $tx['id'] ?>" style="display:contents;">
+                                    <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken) ?>">
+                                    <button type="submit" class="action-btn" title="ອະນຸມັດ" style="color:#16a34a;">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                    </button>
+                                </form>
+                            <?php endif; ?>
                             <button type="button" onclick="openEditModal(<?= htmlspecialchars(json_encode($tx), ENT_QUOTES) ?>)"
                                 class="action-btn" title="ແກ້ໄຂ">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1722,7 +1744,7 @@ function filterQs(array $filters, string $key = '', mixed $val = null): string
         </div>
     </div>
 
-    <script>
+    <script nonce="<?= CSP_NONCE ?? '' ?>">
         const BASE_URL = '<?= BASE_URL ?>';
 
         /* ── Modal ─────────────────────────────────────── */

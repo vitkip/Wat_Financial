@@ -181,7 +181,7 @@ $overallPct = $totalBudgeted > 0
     </div>
 </div>
 
-<script>
+<script nonce="<?= CSP_NONCE ?? '' ?>">
 function openModal(id) {
     const el = document.getElementById(id);
     el.classList.remove('hidden');

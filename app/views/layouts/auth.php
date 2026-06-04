@@ -5,7 +5,7 @@
     <?= $content ?>
 </div>
 
-<script>
+<script nonce="<?= CSP_NONCE ?? '' ?>">
 // CSRF Auto-Inject for auth forms
 (function () {
     const meta = document.querySelector('meta[name="csrf-token"]');

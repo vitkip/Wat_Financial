@@ -110,6 +110,15 @@
     @apply h-full rounded-full transition-all duration-700 ease-out;
   }
 
+  /* ── Outline Button ─────────────────────────────────────── */
+  .btn-outline {
+    @apply inline-flex items-center gap-1.5 px-5 py-2.5 rounded font-label
+           text-label-md font-semibold tracking-wide
+           border border-outline-variant text-on-surface-variant bg-transparent
+           hover:border-outline hover:bg-surface-container
+           active:scale-95 transition-all duration-200;
+  }
+
   /* ── Mobile Menu Overlay ────────────────────────────────── */
   .mobile-overlay {
     @apply fixed inset-0 bg-on-surface/30 backdrop-blur-sm z-30

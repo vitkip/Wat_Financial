@@ -64,9 +64,12 @@ class AuthController extends Controller
         unset($_SESSION['login_attempts'], $_SESSION['login_locked_until']);
 
         session_regenerate_id(true);
-        $_SESSION['user_id']    = $user['id'];
-        $_SESSION['user_name']  = $user['name'];
-        $_SESSION['user_email'] = $user['email'];
+        $_SESSION['user_id']      = $user['id'];
+        $_SESSION['user_name']    = $user['name'];
+        $_SESSION['user_email']   = $user['email'];
+        $_SESSION['user_role']    = $user['role'];           // legacy slug (backward compat)
+        $_SESSION['user_role_id'] = (int) ($user['role_id'] ?? 0); // new RBAC ID
+        $_SESSION['user_role_label'] = $user['role_label'] ?? $user['role'];
 
         $this->user->touchLogin((int)$user['id']);
         $this->redirect('');

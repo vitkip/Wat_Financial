@@ -11,9 +11,12 @@ class Budget
         $this->db = Database::getInstance();
     }
 
-    public function getAll(string $month = null): array
+    public function getAll(?string $month = null): array
     {
         $month = $month ?? date('Y-m');
+        $start = $month . '-01';
+        $end   = date('Y-m-d', strtotime('first day of next month', strtotime($start)));
+
         return $this->db->fetchAll(
             "SELECT
                 b.*,
@@ -25,12 +28,14 @@ class Budget
              LEFT JOIN categories c ON b.category_id = c.id
              LEFT JOIN transactions t
                 ON t.category_id = b.category_id
-                AND t.type = 'expense'
-                AND DATE_FORMAT(t.date, '%Y-%m') = :month
-             WHERE b.month = :month2
+                AND t.type       = 'expense'
+                AND t.status     = 'approved'
+                AND t.date      >= :start
+                AND t.date       < :end
+             WHERE b.month = :month
              GROUP BY b.id
              ORDER BY spent DESC",
-            [':month' => $month, ':month2' => $month]
+            [':start' => $start, ':end' => $end, ':month' => $month]
         );
     }
 
@@ -58,7 +63,7 @@ class Budget
         );
     }
 
-    public function getTotalBudgeted(string $month = null): float
+    public function getTotalBudgeted(?string $month = null): float
     {
         $month = $month ?? date('Y-m');
         $row = $this->db->fetch(

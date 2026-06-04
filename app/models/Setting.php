@@ -37,8 +37,29 @@ class Setting
 
     public function updateMany(array $keyValues): void
     {
+        if (empty($keyValues)) return;
+
+        // Single CASE UPDATE instead of N individual UPDATEs
+        $cases  = [];
+        $params = [];
+        $inKeys = [];
+        $i      = 0;
+
         foreach ($keyValues as $key => $value) {
-            $this->set($key, (string)$value);
+            $kp          = ":k{$i}";
+            $vp          = ":v{$i}";
+            $cases[]     = "WHEN {$kp} THEN {$vp}";
+            $params[$kp] = $key;
+            $params[$vp] = (string) $value;
+            $inKeys[]    = $kp;
+            $i++;
         }
+
+        $inList = implode(', ', $inKeys);
+        $this->db->execute(
+            "UPDATE settings SET value = CASE `key` " . implode(' ', $cases) . " END
+             WHERE `key` IN ({$inList})",
+            $params
+        );
     }
 }

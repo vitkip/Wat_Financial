@@ -8,6 +8,7 @@ class RecurringController extends Controller
     public function __construct()
     {
         $this->requireAuth();
+        $this->requirePermission('recurring.view', '');
         $this->recurring    = new RecurringTransaction();
         $this->transaction  = new Transaction();
         $this->category     = new Category();
@@ -27,7 +28,8 @@ class RecurringController extends Controller
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirect('recurring');
         }
-        $this->verifyCsrf(); // ✅ CSRF
+        $this->verifyCsrf();
+        $this->requirePermission('recurring.create', 'recurring');
 
         $data = [
             'type'         => $this->sanitizeType($_POST['type'] ?? ''), // ✅ Sanitize enum
@@ -49,13 +51,36 @@ class RecurringController extends Controller
         // Validate day_of_month
         $data['day_of_month'] = max(1, min(31, $data['day_of_month']));
 
+        // Validate start_date is a real calendar date; fall back to today if malformed.
+        $sd = $data['start_date'];
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $sd) ||
+            !checkdate((int)substr($sd,5,2), (int)substr($sd,8,2), (int)substr($sd,0,4))) {
+            $data['start_date'] = date('Y-m-d');
+        }
+
+        // Validate optional end_date.
+        if (!empty($data['end_date'])) {
+            $ed = $data['end_date'];
+            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $ed) ||
+                !checkdate((int)substr($ed,5,2), (int)substr($ed,8,2), (int)substr($ed,0,4))) {
+                $data['end_date'] = null; // silently clear an unparseable value
+            } elseif ($data['end_date'] <= $data['start_date']) {
+                $this->flash('error', 'ວັນໝົດກຳນົດຕ້ອງຢູ່ຫຼັງວັນເລີ່ມຕົ້ນ.');
+                $this->redirect('recurring');
+            }
+        }
+
         if ($data['amount'] <= 0 || empty($data['description'])) {
             $this->flash('error', 'ກະລຸນາໃສ່ຈຳນວນ ແລະ ລາຍລະອຽດ ໃຫ້ຖືກຕ້ອງ.');
             $this->redirect('recurring');
         }
 
-        $this->recurring->create($data);
-        $this->flash('success', 'ເພີ່ມລາຍການຊ້ຳສຳເລັດ.');
+        try {
+            $this->recurring->create($data);
+            $this->flash('success', 'ເພີ່ມລາຍການຊ້ຳສຳເລັດ.');
+        } catch (Exception $e) {
+            $this->flash('error', 'ເກີດຂໍ້ຜິດພາດ. ກະລຸນາລອງໃໝ່.');
+        }
         $this->redirect('recurring');
     }
 
@@ -97,6 +122,9 @@ class RecurringController extends Controller
             $this->redirect('recurring');
         }
 
+        $this->requirePermission('recurring.generate', 'recurring');
+        $status = $this->can('transactions.approve') ? 'approved' : 'pending';
+
         $this->transaction->create([
             'type'        => $rec['type'],
             'amount'      => $rec['amount'],
@@ -104,6 +132,8 @@ class RecurringController extends Controller
             'category_id' => $rec['category_id'],
             'date'        => date('Y-m-d'),
             'notes'       => 'ສ້າງຈາກລາຍການຊ້ຳ: ' . $rec['description'],
+            'status'      => $status,
+            'created_by'  => $_SESSION['user_id'],
         ]);
 
         $next = $this->recurring->calcNextRun(
@@ -124,6 +154,7 @@ class RecurringController extends Controller
             $this->redirect('recurring');
         }
         $this->verifyCsrf();
+        $this->requirePermission('recurring.delete', 'recurring');
 
         $this->recurring->delete($id);
         $this->flash('success', 'ລຶບລາຍການຊ້ຳສຳເລັດ.');

@@ -71,6 +71,22 @@ $fmt = fn(float $n) => CURRENCY . ' ' . number_format($n, 0, '.', ',');
         </div>
     </div>
 </div>
+<!-- ── Accounts Overview ─────────────────────────────────────────── -->
+<div class="mb-8">
+    <p class="section-label mb-4">ຍອດເງິນແຕ່ລະບັນຊີ</p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        <?php if (!empty($accounts)): ?>
+            <?php foreach ($accounts as $acc): ?>
+            <div class="card p-4 flex items-center justify-between border-l-4 <?= $acc['type'] === 'asset' ? 'border-primary' : 'border-error' ?>">
+                <div>
+                    <p class="font-label text-sm text-on-surface-variant"><?= htmlspecialchars($acc['name']) ?></p>
+                    <p class="font-headline font-bold text-lg"><?= $fmt((float)$acc['balance']) ?></p>
+                </div>
+            </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </div>
+</div>
 
 <!-- ── KPI Stat Cards ─────────────────────────────────────────── -->
 <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
@@ -224,7 +240,8 @@ $fmt = fn(float $n) => CURRENCY . ' ' . number_format($n, 0, '.', ',');
 </div>
 
 <!-- ── Chart.js Scripts ───────────────────────────────────────── -->
-<script>
+<script nonce="<?= CSP_NONCE ?? '' ?>">
+document.addEventListener('DOMContentLoaded', function () {
 (function () {
     const surfaceVariant = '#E0E3E5';
     const gridColor      = 'rgba(117,119,125,0.12)';
@@ -343,4 +360,5 @@ $fmt = fn(float $n) => CURRENCY . ' ' . number_format($n, 0, '.', ',');
         });
     }
 })();
+});
 </script>

@@ -7,6 +7,7 @@ class SettingsController extends Controller
     public function __construct()
     {
         $this->requireAuth();
+        $this->requirePermission('settings.view', '');
         $this->setting = new Setting();
         $this->user    = new User();
     }
@@ -35,12 +36,19 @@ class SettingsController extends Controller
 
         $data = [];
         foreach ($allowed as $key) {
-            if (isset($_POST[$key])) {
-                $data[$key] = htmlspecialchars(trim($_POST[$key]));
-            }
+            if (!isset($_POST[$key])) continue;
+            $val = htmlspecialchars(trim($_POST[$key]));
+            // Clamp numeric settings to safe ranges before writing to DB.
+            if ($key === 'decimal_places') $val = (string) max(0, min(4, (int) $val));
+            if ($key === 'items_per_page') $val = (string) max(5, min(100, (int) $val));
+            if ($key === 'week_start')     $val = in_array((int) $val, [0, 1], true) ? $val : '1';
+            $data[$key] = $val;
         }
 
+        $this->requirePermission('settings.edit', 'settings');
+
         $this->setting->updateMany($data);
+        Cache::delete('_app_settings'); // bust bootstrap cache so new values take effect immediately
         $this->flash('success', 'ບັນທຶກການຕັ້ງຄ່າສຳເລັດ.');
         $this->redirect('settings');
     }
@@ -94,8 +102,8 @@ class SettingsController extends Controller
             $this->redirect('settings');
         }
 
-        if (strlen($newPass) < 6) {
-            $this->flash('error', 'ລະຫັດຜ່ານໃໝ່ຕ້ອງມີຢ່າງໜ້ອຍ 6 ຕົວອັກສອນ.');
+        if (strlen($newPass) < 8) {
+            $this->flash('error', 'ລະຫັດຜ່ານໃໝ່ຕ້ອງມີຢ່າງໜ້ອຍ 8 ຕົວອັກສອນ.');
             $this->redirect('settings');
         }
 

@@ -21,6 +21,21 @@ define('CURRENCY_CODE_DEFAULT', 'LAK');
 define('LOCALE_DEFAULT',        'lo_LA');
 define('TIMEZONE_DEFAULT',      'Asia/Vientiane');
 
+// ── View Helpers ──────────────────────────────────────────────
+
+/**
+ * JSON-encode data safe for inline <script> output.
+ * Escapes <, >, &, ', " so the value cannot break out of a script tag
+ * even if it contains user-supplied strings.
+ */
+function json_safe(mixed $data): string
+{
+    return json_encode(
+        $data,
+        JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR
+    );
+}
+
 // ── Lao Month Helpers ─────────────────────────────────────────
 function laoMonthFull(int $m): string {
     static $months = [

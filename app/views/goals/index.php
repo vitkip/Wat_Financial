@@ -271,7 +271,7 @@ $colors = [
     </div>
 </div>
 
-<script>
+<script nonce="<?= CSP_NONCE ?? '' ?>">
 const BASE_URL = '<?= BASE_URL ?>';
 function openModal(id) {
     const el = document.getElementById(id);

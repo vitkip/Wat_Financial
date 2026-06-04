@@ -82,6 +82,7 @@ module.exports = {
         'body-sm':     ['0.875rem',{ lineHeight: '1.5' }],
         'label-md':    ['0.75rem', { lineHeight: '1.4', letterSpacing: '0.05em', fontWeight: '500' }],
         'label-sm':    ['0.6875rem',{ lineHeight: '1.4', letterSpacing: '0.05em', fontWeight: '500' }],
+        'label-xs':    ['0.625rem', { lineHeight: '1.4', letterSpacing: '0.06em', fontWeight: '500' }],
       },
       borderRadius: {
         'sm':  '2px',

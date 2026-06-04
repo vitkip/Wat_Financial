@@ -70,7 +70,7 @@
     </div><!-- /main content -->
 </div><!-- /app shell -->
 
-<script>
+<script nonce="<?= CSP_NONCE ?? '' ?>">
 // ── CSRF Auto-Inject ──────────────────────────────────────────
 // ອ່ານ token ຈາກ <meta name="csrf-token"> ແລ້ວ inject ເຂົ້າທຸກ POST form
 (function () {
@@ -114,32 +114,47 @@ function closeMobileMenu() {
     document.body.style.overflow = '';
 }
 
-// ── SweetAlert2 — Global Delete Confirm ──────────────────────
+// ── SweetAlert2 — lazy-loaded on first confirmDelete() call ──
+// SweetAlert2 JS (~50 KB) is only fetched when the user actually clicks a
+// delete button, not on every page load.
 function confirmDelete(btn, opts = {}) {
-    const form  = btn.closest('form');
-    const desc  = btn.dataset.desc   || opts.desc  || '';
-    const sub   = btn.dataset.sub    || opts.sub   || '';
-    Swal.fire({
-        title:             opts.title || 'ລຶບລາຍການນີ້?',
-        html:              desc
-                             ? `<p style="color:#475569;font-size:14px;margin:0"><strong>${desc}</strong>${sub ? '<br><span style="color:#94a3b8;font-size:12px;">' + sub + '</span>' : ''}</p>`
-                             : '',
-        icon:              'warning',
-        iconColor:         '#e11d48',
-        showCancelButton:  true,
-        confirmButtonText: 'ລຶບ',
-        cancelButtonText:  'ຍົກເລີກ',
-        confirmButtonColor:'#e11d48',
-        cancelButtonColor: '#64748b',
-        reverseButtons:    true,
-        focusCancel:       true,
-        customClass: {
-            popup:         'swal-lao-popup',
-            title:         'swal-lao-title',
-            confirmButton: 'swal-lao-btn',
-            cancelButton:  'swal-lao-btn',
-        },
-    }).then(r => { if (r.isConfirmed) form.submit(); });
+    const form = btn.closest('form');
+    const desc = btn.dataset.desc || opts.desc || '';
+    const sub  = btn.dataset.sub  || opts.sub  || '';
+
+    const fire = () => {
+        Swal.fire({
+            title:             opts.title || 'ລຶບລາຍການນີ້?',
+            html:              desc
+                                 ? `<p style="color:#475569;font-size:14px;margin:0"><strong>${desc}</strong>${sub ? '<br><span style="color:#94a3b8;font-size:12px;">' + sub + '</span>' : ''}</p>`
+                                 : '',
+            icon:              'warning',
+            iconColor:         '#e11d48',
+            showCancelButton:  true,
+            confirmButtonText: 'ລຶບ',
+            cancelButtonText:  'ຍົກເລີກ',
+            confirmButtonColor:'#e11d48',
+            cancelButtonColor: '#64748b',
+            reverseButtons:    true,
+            focusCancel:       true,
+            customClass: { popup:'swal-lao-popup', title:'swal-lao-title', confirmButton:'swal-lao-btn', cancelButton:'swal-lao-btn' },
+        }).then(r => { if (r.isConfirmed) form.submit(); });
+    };
+
+    if (window.Swal) {
+        fire();
+        return;
+    }
+    // First call: load CSS + JS bundle, then fire
+    const css = document.createElement('link');
+    css.rel   = 'stylesheet';
+    css.href  = 'https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css';
+    document.head.appendChild(css);
+
+    const js  = document.createElement('script');
+    js.src    = 'https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js';
+    js.onload = fire;
+    document.head.appendChild(js);
 }
 
 // ── Auto-dismiss Flash Messages ───────────────────────────────

@@ -14,6 +14,7 @@ class ExportController extends Controller
     public function __construct()
     {
         $this->requireAuth();
+        $this->requirePermission('reports.export', '');
         $this->transaction = new Transaction();
         $this->category    = new Category();
     }
@@ -27,16 +28,14 @@ class ExportController extends Controller
         $format  = strtolower($_GET['format'] ?? 'csv');
         $filters = $this->parseFilters();
 
-        // ດຶງທຸລະກຳທັງໝົດທີ່ match filter (ບໍ່ pagination)
-        $hasFilter = array_filter(array_values($filters), fn($v) => $v !== '');
-        $rows = $hasFilter
-            ? $this->transaction->searchAll($filters)
-            : $this->transaction->getAllForExport();
-
         if ($format === 'pdf') {
+            // PDF needs the full array in memory for the view renderer
+            $rows = $this->transaction->searchAll($filters);
             $this->renderTransactionsPdf($rows, $filters);
         } else {
-            $this->streamTransactionsCsv($rows, $filters);
+            // CSV streams row-by-row via PDO cursor — O(1) memory regardless of dataset size
+            $cursor = $this->transaction->cursorForExport($filters);
+            $this->streamTransactionsCsvCursor($cursor);
         }
     }
 
@@ -56,7 +55,7 @@ class ExportController extends Controller
             $title    = laoMonthFull((int)$month) . ' ' . $year;
         } else {
             $rows  = $this->transaction->getByYear($year);
-            $title = 'ລາຍງານປີ ' . $year;
+            $title = "ລາຍງານປີ {$year}";
         }
 
         // ສ້າງ monthly summary rows ສຳລັບ yearly report
@@ -93,43 +92,50 @@ class ExportController extends Controller
     // CSV Streams
     // ──────────────────────────────────────────────────────────────
 
-    private function streamTransactionsCsv(array $rows, array $filters): void
+    /**
+     * Streams CSV row-by-row from a PDO cursor.
+     * Memory usage stays constant regardless of how many rows are exported.
+     */
+    private function streamTransactionsCsvCursor(PDOStatement $cursor): void
     {
         $filename = 'transactions_' . date('Ymd_His') . '.csv';
+        $dp       = defined('DECIMAL_PLACES') ? DECIMAL_PLACES : 0;
 
         header('Content-Type: text/csv; charset=UTF-8');
-        header('Content-Disposition: attachment; filename="' . $filename . '"');
-        header('Pragma: no-cache');
-        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+        header("Content-Disposition: attachment; filename=\"{$filename}\"");
+        header('Cache-Control: no-store, no-cache, must-revalidate');
         header('Expires: 0');
 
         $out = fopen('php://output', 'w');
-        // BOM ສຳລັບ Excel ໃຫ້ຮຮ Lao ຖືກຕ້ອງ
-        fputs($out, "\xEF\xBB\xBF");
+        fputs($out, "\xEF\xBB\xBF"); // BOM for Excel/Lao support
 
-        // Header row
-        fputcsv($out, ['#', 'ວັນທີ', 'ປະເພດ', 'ລາຍລະອຽດ', 'ໝວດໝູ່', 'ຈຳນວນ (' . CURRENCY_CODE . ')', 'ໝາຍເຫດ']);
+        $cc = CURRENCY_CODE;
+        fputcsv($out, ['#', 'ວັນທີ', 'ປະເພດ', 'ລາຍລະອຽດ', 'ໝວດໝູ່', "ຈຳນວນ ({$cc})", 'ໝາຍເຫດ']);
 
         $i = 1;
-        foreach ($rows as $tx) {
+        $income  = 0.0;
+        $expense = 0.0;
+
+        while ($tx = $cursor->fetch()) {
+            $amount = (float) $tx['amount'];
+            if ($tx['type'] === 'income')  $income  += $amount;
+            else                           $expense += $amount;
+
             fputcsv($out, [
                 $i++,
                 $tx['date'],
                 $tx['type'] === 'income' ? 'ລາຍຮັບ' : 'ລາຍຈ່າຍ',
                 $tx['description'],
                 $tx['category_name'] ?? '—',
-                number_format((float)$tx['amount'], defined('DECIMAL_PLACES') ? DECIMAL_PLACES : 0, '.', ''),
+                number_format($amount, $dp, '.', ''),
                 $tx['notes'] ?? '',
             ]);
         }
 
-        // Summary rows
-        $income  = array_sum(array_map(fn($r) => $r['type'] === 'income'  ? (float)$r['amount'] : 0, $rows));
-        $expense = array_sum(array_map(fn($r) => $r['type'] === 'expense' ? (float)$r['amount'] : 0, $rows));
         fputcsv($out, []);
-        fputcsv($out, ['', '', '', '', 'ລວມລາຍຮັບ',  number_format($income,  defined('DECIMAL_PLACES') ? DECIMAL_PLACES : 0, '.', ''), '']);
-        fputcsv($out, ['', '', '', '', 'ລວມລາຍຈ່າຍ', number_format($expense, defined('DECIMAL_PLACES') ? DECIMAL_PLACES : 0, '.', ''), '']);
-        fputcsv($out, ['', '', '', '', 'ຍອດສຸດທິ',   number_format($income - $expense, defined('DECIMAL_PLACES') ? DECIMAL_PLACES : 0, '.', ''), '']);
+        fputcsv($out, ['', '', '', '', 'ລວມລາຍຮັບ',  number_format($income,           $dp, '.', ''), '']);
+        fputcsv($out, ['', '', '', '', 'ລວມລາຍຈ່າຍ', number_format($expense,          $dp, '.', ''), '']);
+        fputcsv($out, ['', '', '', '', 'ຍອດສຸດທິ',   number_format($income - $expense, $dp, '.', ''), '']);
 
         fclose($out);
         exit;
@@ -137,11 +143,12 @@ class ExportController extends Controller
 
     private function streamReportCsv(array $rows, array $monthlySummary, string $title, int $year, string $month): void
     {
-        $slug     = $month !== '' ? "{$year}_{$month}" : (string)$year;
-        $filename = 'report_' . $slug . '_' . date('Ymd') . '.csv';
+        $slug     = $month !== '' ? "{$year}_{$month}" : (string) $year;
+        $today    = date('Ymd');
+        $filename = "report_{$slug}_{$today}.csv";
 
         header('Content-Type: text/csv; charset=UTF-8');
-        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header("Content-Disposition: attachment; filename=\"{$filename}\"");
         header('Pragma: no-cache');
         header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
         header('Expires: 0');
@@ -155,7 +162,8 @@ class ExportController extends Controller
             // Monthly detail
             fputcsv($out, [$title]);
             fputcsv($out, []);
-            fputcsv($out, ['#', 'ວັນທີ', 'ປະເພດ', 'ລາຍລະອຽດ', 'ໝວດໝູ່', 'ຈຳນວນ (' . CURRENCY_CODE . ')', 'ໝາຍເຫດ']);
+            $cc = CURRENCY_CODE;
+        fputcsv($out, ['#', 'ວັນທີ', 'ປະເພດ', 'ລາຍລະອຽດ', 'ໝວດໝູ່', "ຈຳນວນ ({$cc})", 'ໝາຍເຫດ']);
 
             $i = 1;
             foreach ($rows as $tx) {
@@ -171,9 +179,10 @@ class ExportController extends Controller
             }
         } else {
             // Yearly summary sheet
-            fputcsv($out, ['ລາຍງານລາຍປີ ' . $year]);
+            $cc = CURRENCY_CODE;
+            fputcsv($out, ["ລາຍງານລາຍປີ {$year}"]);
             fputcsv($out, []);
-            fputcsv($out, ['ເດືອນ', 'ລາຍຮັບ (' . CURRENCY_CODE . ')', 'ລາຍຈ່າຍ (' . CURRENCY_CODE . ')', 'ຍອດສຸດທິ (' . CURRENCY_CODE . ')']);
+            fputcsv($out, ['ເດືອນ', "ລາຍຮັບ ({$cc})", "ລາຍຈ່າຍ ({$cc})", "ຍອດສຸດທິ ({$cc})"]);
 
             foreach ($monthlySummary as $row) {
                 fputcsv($out, [
@@ -193,7 +202,8 @@ class ExportController extends Controller
             // Detail sheet separator
             fputcsv($out, []);
             fputcsv($out, ['── ລາຍການທຸລະກຳທັງໝົດ ──']);
-            fputcsv($out, ['#', 'ວັນທີ', 'ປະເພດ', 'ລາຍລະອຽດ', 'ໝວດໝູ່', 'ຈຳນວນ (' . CURRENCY_CODE . ')', 'ໝາຍເຫດ']);
+            $cc = CURRENCY_CODE;
+        fputcsv($out, ['#', 'ວັນທີ', 'ປະເພດ', 'ລາຍລະອຽດ', 'ໝວດໝູ່', "ຈຳນວນ ({$cc})", 'ໝາຍເຫດ']);
 
             $i = 1;
             foreach ($rows as $tx) {
@@ -262,6 +272,7 @@ class ExportController extends Controller
             'date_to'     => $_GET['date_to']           ?? '',
             'amount_min'  => $_GET['amount_min']        ?? '',
             'amount_max'  => $_GET['amount_max']        ?? '',
+            'status'      => $_GET['status']            ?? 'approved',
         ];
     }
 }

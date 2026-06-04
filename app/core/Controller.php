@@ -33,6 +33,9 @@ class Controller
             throw new RuntimeException("View not found: {$view}");
         }
 
+        // Make the Permission engine available inside every view as $perms
+        $perms = Permission::getInstance();
+
         ob_start();
         require $viewFile;
         $content = ob_get_clean();
@@ -61,20 +64,65 @@ class Controller
         }
 
         // ── Session Timeout (idle) ────────────────────────────
-        // ຖ້າ idle ເກີນ SESSION_TIMEOUT_SECS → force logout
         $timeout = defined('SESSION_TIMEOUT_SECS') ? SESSION_TIMEOUT_SECS : 7200;
         $now     = time();
 
         if (!empty($_SESSION['_last_activity']) && ($now - $_SESSION['_last_activity']) > $timeout) {
             session_unset();
             session_destroy();
-            // ສ້າງ session ໃໝ່ ແລ້ວ flash ກ່ອນ redirect
             session_start();
             $_SESSION['_flash'] = ['type' => 'warning', 'msg' => 'Session ໝົດອາຍຸ. ກະລຸນາ login ໃໝ່.'];
             $this->redirect('auth');
         }
 
         $_SESSION['_last_activity'] = $now;
+
+        // ── Bootstrap RBAC ───────────────────────────────────
+        if (!empty($_SESSION['user_role_id'])) {
+            Permission::getInstance()->boot(
+                (int) $_SESSION['user_id'],
+                (int) $_SESSION['user_role_id']
+            );
+        }
+    }
+
+    // ── RBAC helpers ──────────────────────────────────────────────────
+
+    /** Check whether the current user holds a permission. */
+    protected function can(string $permission): bool
+    {
+        return Permission::getInstance()->can($permission);
+    }
+
+    /** Return true when the user holds at least one of the listed permissions. */
+    protected function canAny(array $permissions): bool
+    {
+        return Permission::getInstance()->canAny($permissions);
+    }
+
+    /**
+     * Abort with a 403 flash-redirect if the user lacks the given permission.
+     *
+     * @param string $permission  e.g. 'transactions.approve'
+     * @param string $redirectTo  Relative URL to redirect to (defaults to home)
+     */
+    protected function requirePermission(string $permission, string $redirectTo = ''): void
+    {
+        if (!$this->can($permission)) {
+            $this->flash('error', 'ທ່ານບໍ່ມີສິດໃນການດຳເນີນການນີ້.');
+            $this->redirect($redirectTo ?: '');
+        }
+    }
+
+    /**
+     * Abort unless the user holds at least one of the permissions.
+     */
+    protected function requireAnyPermission(array $permissions, string $redirectTo = ''): void
+    {
+        if (!$this->canAny($permissions)) {
+            $this->flash('error', 'ທ່ານບໍ່ມີສິດໃນການດຳເນີນການນີ້.');
+            $this->redirect($redirectTo ?: '');
+        }
     }
 
     protected function isLoggedIn(): bool
